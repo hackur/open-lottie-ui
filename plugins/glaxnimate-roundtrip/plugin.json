@@ -1,0 +1,43 @@
+{
+  "manifest_version": 1,
+  "id": "glaxnimate-roundtrip",
+  "name": "Open in Glaxnimate",
+  "description": "Open the animation in Glaxnimate (open-source Lottie editor). Watches the file; when saved, the modified Lottie is re-imported.",
+  "author": "open-lottie-ui",
+  "homepage": "https://glaxnimate.org/",
+  "license": "MIT",
+  "external_tool_license": "GPL-3.0",
+
+  "requires": {
+    "node_modules": [],
+    "binaries": ["glaxnimate"],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "library_item_action", "label": "Open in Glaxnimate", "icon": "edit-3" }
+  ],
+
+  "io": {
+    "input": "lottie",
+    "output": "lottie",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "wait_for_save": { "type": "boolean", "default": true, "description": "Block until the user saves; otherwise launch detached." }
+      }
+    }
+  },
+
+  "metadata": {
+    "tooltip_warning": "Glaxnimate is GPL-3.0. You install and run it; this app only invokes it. Output remains under your project's license."
+  },
+
+  "run": {
+    "type": "shell",
+    "command": "glaxnimate",
+    "args_template": ["{{input_file}}"],
+    "stdin": null,
+    "stdout": "ignore"
+  }
+}

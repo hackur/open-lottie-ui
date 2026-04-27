@@ -1,0 +1,46 @@
+{
+  "manifest_version": 1,
+  "id": "python-lottie-helpers",
+  "name": "python-lottie helpers",
+  "description": "Apply high-level animation helpers from the python-lottie package: shake, follow-bezier, draw-on / draw-off, wave distortion, IK rigging.",
+  "author": "open-lottie-ui",
+  "homepage": "https://mattbas.gitlab.io/python-lottie/",
+  "license": "MIT",
+  "external_tool_license": "AGPL-3.0",
+
+  "requires": {
+    "node_modules": [],
+    "binaries": ["python3"],
+    "python_packages": ["lottie"]
+  },
+
+  "surfaces": [
+    { "type": "library_item_action", "label": "Apply helper…", "icon": "wand" }
+  ],
+
+  "io": {
+    "input": "lottie",
+    "output": "lottie",
+    "params_schema": {
+      "type": "object",
+      "required": ["helper"],
+      "properties": {
+        "helper": {
+          "type": "string",
+          "enum": ["shake", "follow_bezier", "draw_on", "draw_off", "wave_distort", "ik_rig"]
+        },
+        "intensity": { "type": "number", "minimum": 0, "maximum": 10, "default": 1 },
+        "frames":    { "type": "integer", "minimum": 1, "maximum": 600, "default": 60 }
+      }
+    }
+  },
+
+  "metadata": {
+    "tooltip_warning": "python-lottie is AGPL-3.0. The plugin shells out to python3 — no AGPL code links into this app. Outputs remain yours."
+  },
+
+  "run": {
+    "type": "python",
+    "entry": "src/run.py"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "slide-in",
+  "name": "Slide In",
+  "description": "A shape that slides from off-canvas to a target position with ease-out.",
+  "params_schema": {
+    "type": "object",
+    "required": ["from", "to", "duration_frames"],
+    "properties": {
+      "from":            { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" }, "description": "Start [x, y] in canvas coords." },
+      "to":              { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" }, "description": "End [x, y] in canvas coords." },
+      "duration_frames": { "type": "integer", "minimum": 6, "maximum": 600, "default": 30 },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 200 },
+      "shape":           { "type": "string", "enum": ["circle", "rect", "rounded-rect"], "default": "circle" },
+      "color":           { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+      "easing":          { "type": "string", "enum": ["linear", "easeOut", "easeOutQuad", "easeOutCubic"], "default": "easeOutCubic" }
+    }
+  },
+  "scaffold_status": "STUB — to be filled in during M1."
+}

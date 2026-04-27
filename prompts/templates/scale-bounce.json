@@ -1,0 +1,16 @@
+{
+  "id": "scale-bounce",
+  "name": "Scale Bounce",
+  "description": "A shape that scales 100 → 110 → 100 with overshoot, looped.",
+  "params_schema": {
+    "type": "object",
+    "required": ["duration_frames"],
+    "properties": {
+      "duration_frames": { "type": "integer", "minimum": 12, "maximum": 600, "default": 48 },
+      "overshoot_pct":   { "type": "number", "minimum": 100, "maximum": 200, "default": 110 },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 200 },
+      "color":           { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 } }
+    }
+  },
+  "scaffold_status": "STUB — to be filled in during M1."
+}

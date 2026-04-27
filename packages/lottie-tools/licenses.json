@@ -1,0 +1,108 @@
+{
+  "$schema_note": "Registry of license records used by the import pipeline and export bundle generator. Add entries as new sources show up. SPDX ids are preferred for software-style licenses.",
+  "version": 1,
+  "licenses": {
+    "unknown": {
+      "name": "Unknown",
+      "url": null,
+      "commercial": false,
+      "attribution_required": false,
+      "share_alike": false,
+      "redistribute_collection": false,
+      "note": "Default for files imported without a known source. The user can change this later."
+    },
+    "MIT": {
+      "name": "MIT License",
+      "url": "https://opensource.org/license/mit/",
+      "commercial": true,
+      "attribution_required": false,
+      "share_alike": false,
+      "redistribute_collection": true
+    },
+    "Apache-2.0": {
+      "name": "Apache License 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0",
+      "commercial": true,
+      "attribution_required": true,
+      "share_alike": false,
+      "redistribute_collection": true
+    },
+    "CC0-1.0": {
+      "name": "CC0 1.0 Universal (Public Domain Dedication)",
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "commercial": true,
+      "attribution_required": false,
+      "share_alike": false,
+      "redistribute_collection": true
+    },
+    "CC-BY-4.0": {
+      "name": "Creative Commons Attribution 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/",
+      "commercial": true,
+      "attribution_required": true,
+      "share_alike": false,
+      "redistribute_collection": true
+    },
+    "CC-BY-SA-4.0": {
+      "name": "Creative Commons Attribution-ShareAlike 4.0",
+      "url": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "commercial": true,
+      "attribution_required": true,
+      "share_alike": true,
+      "redistribute_collection": true
+    },
+    "CC-BY-NC-4.0": {
+      "name": "Creative Commons Attribution-NonCommercial 4.0",
+      "url": "https://creativecommons.org/licenses/by-nc/4.0/",
+      "commercial": false,
+      "attribution_required": true,
+      "share_alike": false,
+      "redistribute_collection": true
+    },
+    "lottie-simple": {
+      "name": "Lottie Simple License",
+      "url": "https://lottiefiles.com/page/license",
+      "commercial": true,
+      "attribution_required": false,
+      "share_alike": true,
+      "redistribute_collection": false,
+      "note": "Modifications must remain under the same license. Cannot bulk-mirror to compete with LottieFiles."
+    },
+    "lordicon-free": {
+      "name": "Lordicon Free License",
+      "url": "https://lordicon.com/docs/license/free",
+      "commercial": true,
+      "attribution_required": true,
+      "share_alike": false,
+      "redistribute_collection": false,
+      "note": "Cannot resell, rent, lend, or sublicense."
+    },
+    "useanimations-free": {
+      "name": "useAnimations Free License",
+      "url": "https://useanimations.com/licencing-and-terms.html",
+      "commercial": true,
+      "attribution_required": true,
+      "share_alike": false,
+      "redistribute_collection": false,
+      "note": "Visible attribution to useanimations.com required."
+    },
+    "iconscout-free-varies": {
+      "name": "Iconscout Free (varies per uploader)",
+      "url": "https://iconscout.com/licenses",
+      "commercial": null,
+      "attribution_required": null,
+      "share_alike": null,
+      "redistribute_collection": null,
+      "note": "Crowdsourced — capture per-asset license at import. Defaults to 'unknown' if not supplied."
+    },
+    "proprietary-paid": {
+      "name": "Proprietary / paid",
+      "url": null,
+      "commercial": true,
+      "attribution_required": false,
+      "share_alike": false,
+      "redistribute_collection": false,
+      "note": "User has paid for the asset under a proprietary license. Don't redistribute."
+    }
+  }
+}

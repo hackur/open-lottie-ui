@@ -1,0 +1,38 @@
+{
+  "manifest_version": 1,
+  "id": "dotlottie-pack",
+  "name": "Pack to .lottie",
+  "description": "Bundle one or more animations into a single .lottie file with manifest, optional themes, and image assets externalized.",
+  "author": "open-lottie-ui",
+  "homepage": "https://github.com/open-lottie-ui/open-lottie-ui",
+  "license": "MIT",
+
+  "requires": {
+    "node_modules": ["@lottiefiles/dotlottie-js"],
+    "binaries": [],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "library_item_action",  "label": "Pack to .lottie",          "icon": "package" },
+    { "type": "library_multi_action", "label": "Pack selected to .lottie", "icon": "package" }
+  ],
+
+  "io": {
+    "input": "lottie[]",
+    "output": "dotlottie",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "filename": { "type": "string", "default": "bundle.lottie" },
+        "include_themes": { "type": "boolean", "default": true },
+        "externalize_images": { "type": "boolean", "default": true }
+      }
+    }
+  },
+
+  "run": {
+    "type": "node",
+    "entry": "src/index.ts"
+  }
+}

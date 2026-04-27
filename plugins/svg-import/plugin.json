@@ -1,0 +1,43 @@
+{
+  "manifest_version": 1,
+  "id": "svg-import",
+  "name": "Import SVG",
+  "description": "Convert an SVG file into a scaffolded Lottie animation (one shape layer per path; static frame zero). Use Generate or Remix afterwards to add motion.",
+  "author": "open-lottie-ui",
+  "homepage": "https://github.com/open-lottie-ui/open-lottie-ui",
+  "license": "MIT",
+
+  "requires": {
+    "node_modules": ["svg-to-lottie"],
+    "binaries": [],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "import_drop", "label": "Import as Lottie", "icon": "file-image", "match_extensions": [".svg"] },
+    { "type": "library_action", "label": "Import SVG…", "icon": "file-plus" }
+  ],
+
+  "io": {
+    "input": "svg",
+    "output": "lottie",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "frame_rate":  { "type": "integer", "minimum": 12, "maximum": 60, "default": 30 },
+        "duration":   { "type": "integer", "minimum": 1,  "maximum": 600, "default": 60, "description": "frames" },
+        "preserve_groups": { "type": "boolean", "default": true }
+      }
+    }
+  },
+
+  "metadata": {
+    "default_source": "svg-import",
+    "default_license_id": "unknown"
+  },
+
+  "run": {
+    "type": "node",
+    "entry": "src/index.ts"
+  }
+}

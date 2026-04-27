@@ -1,0 +1,38 @@
+{
+  "id": "color-pulse",
+  "name": "Color Pulse",
+  "description": "A filled circle whose color cross-fades between two colors, looped seamlessly.",
+  "params_schema": {
+    "type": "object",
+    "required": ["color_a", "color_b", "duration_frames"],
+    "properties": {
+      "color_a": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 4,
+        "items": { "type": "number", "minimum": 0, "maximum": 1 },
+        "description": "Start color, normalized RGB or RGBA."
+      },
+      "color_b": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 4,
+        "items": { "type": "number", "minimum": 0, "maximum": 1 },
+        "description": "End color, normalized RGB or RGBA."
+      },
+      "duration_frames": {
+        "type": "integer",
+        "minimum": 6,
+        "maximum": 600,
+        "default": 60
+      },
+      "size": {
+        "type": "integer",
+        "minimum": 16,
+        "maximum": 1024,
+        "default": 200
+      }
+    }
+  },
+  "scaffold_status": "STUB — to be filled in during M1 with a real Lottie JSON containing the {{placeholders}} that match params_schema. See prompts/templates/README.md for substitution semantics."
+}

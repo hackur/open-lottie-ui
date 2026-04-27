@@ -1,0 +1,18 @@
+{
+  "id": "draw-on-path",
+  "name": "Draw on Path",
+  "description": "An SVG-like path drawn on via animated trim (tm) from 0 → 100, then held or looped.",
+  "params_schema": {
+    "type": "object",
+    "required": ["path_d", "duration_frames"],
+    "properties": {
+      "path_d":          { "type": "string", "description": "SVG path-like string. The tool converts to Lottie bezier shape data." },
+      "duration_frames": { "type": "integer", "minimum": 6, "maximum": 600, "default": 60 },
+      "stroke_width":    { "type": "number", "minimum": 0.5, "maximum": 64, "default": 4 },
+      "stroke_color":    { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 200 },
+      "loop":            { "type": "boolean", "default": false }
+    }
+  },
+  "scaffold_status": "STUB — to be filled in during M1. Path conversion likely requires a small helper that turns SVG path d into Lottie shape (sh) bezier vertices."
+}

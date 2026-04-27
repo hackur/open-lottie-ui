@@ -1,0 +1,39 @@
+{
+  "manifest_version": 1,
+  "id": "dotlottie-render",
+  "name": "Render with dotlottie-rs",
+  "description": "Use the native ThorVG-based dotlottie-rs CLI to render frames. Faster than puppeteer for batch renders, with the caveat that ThorVG's compatibility lags lottie-web on some features.",
+  "author": "open-lottie-ui",
+  "homepage": "https://github.com/LottieFiles/dotlottie-rs",
+  "license": "MIT",
+
+  "requires": {
+    "node_modules": [],
+    "binaries": ["dotlottie"],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "library_item_action", "label": "Render (fast)", "icon": "image" }
+  ],
+
+  "io": {
+    "input": "lottie",
+    "output": "png",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "frame":  { "type": "integer", "minimum": 0, "default": 0 },
+        "width":  { "type": "integer", "minimum": 16, "maximum": 4096, "default": 320 },
+        "height": { "type": "integer", "minimum": 16, "maximum": 4096, "default": 320 }
+      }
+    }
+  },
+
+  "run": {
+    "type": "shell",
+    "command": "dotlottie",
+    "args_template": ["render", "--input", "{{input_file}}", "--output", "{{output_file}}", "--frame", "{{frame}}", "--width", "{{width}}", "--height", "{{height}}"],
+    "stdout": "ignore"
+  }
+}

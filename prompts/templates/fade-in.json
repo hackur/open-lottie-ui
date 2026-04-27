@@ -1,0 +1,16 @@
+{
+  "id": "fade-in",
+  "name": "Fade In",
+  "description": "A shape that fades from opacity 0 to 100 over N frames.",
+  "params_schema": {
+    "type": "object",
+    "required": ["duration_frames"],
+    "properties": {
+      "duration_frames": { "type": "integer", "minimum": 1, "maximum": 600, "default": 30 },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 200 },
+      "color":           { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+      "easing":          { "type": "string", "enum": ["linear", "easeInOut", "easeOut", "easeIn"], "default": "easeOut" }
+    }
+  },
+  "scaffold_status": "STUB — to be filled in during M1."
+}

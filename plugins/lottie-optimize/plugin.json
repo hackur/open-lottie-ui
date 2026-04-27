@@ -1,0 +1,40 @@
+{
+  "manifest_version": 1,
+  "id": "lottie-optimize",
+  "name": "Optimize Lottie",
+  "description": "Composable optimization passes: round numerics, drop unused assets, drop hidden layers, merge duplicate keyframes, strip metadata. Each pass is opt-in.",
+  "author": "open-lottie-ui",
+  "homepage": "https://github.com/open-lottie-ui/open-lottie-ui",
+  "license": "MIT",
+
+  "requires": {
+    "node_modules": [],
+    "binaries": [],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "library_item_action", "label": "Optimize", "icon": "zap" }
+  ],
+
+  "io": {
+    "input": "lottie",
+    "output": "lottie",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "round_decimals":         { "type": "integer", "minimum": 0, "maximum": 6, "default": 3 },
+        "drop_unused_assets":     { "type": "boolean", "default": true },
+        "drop_hidden_layers":     { "type": "boolean", "default": true },
+        "merge_duplicate_keyframes": { "type": "boolean", "default": true },
+        "strip_metadata":         { "type": "boolean", "default": false },
+        "externalize_images":     { "type": "boolean", "default": false }
+      }
+    }
+  },
+
+  "run": {
+    "type": "node",
+    "entry": "src/index.ts"
+  }
+}

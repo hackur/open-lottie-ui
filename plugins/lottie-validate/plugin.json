@@ -1,0 +1,36 @@
+{
+  "manifest_version": 1,
+  "id": "lottie-validate",
+  "name": "Validate against lottie-spec",
+  "description": "Run the lottie-spec JSON Schema validator and report errors / warnings. Surfaces in library and review screens.",
+  "author": "open-lottie-ui",
+  "homepage": "https://github.com/open-lottie-ui/open-lottie-ui",
+  "license": "MIT",
+
+  "requires": {
+    "node_modules": ["ajv", "ajv-formats"],
+    "binaries": [],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "library_item_action",  "label": "Validate", "icon": "shield-check" },
+    { "type": "generation_action",    "label": "Validate", "icon": "shield-check" }
+  ],
+
+  "io": {
+    "input": "lottie",
+    "output": "report",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "include_lints": { "type": "boolean", "default": true, "description": "Run additional lints (expressions used, text layers, broken refs)." }
+      }
+    }
+  },
+
+  "run": {
+    "type": "node",
+    "entry": "src/index.ts"
+  }
+}

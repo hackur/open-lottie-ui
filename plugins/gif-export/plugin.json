@@ -1,0 +1,38 @@
+{
+  "manifest_version": 1,
+  "id": "gif-export",
+  "name": "Export to GIF",
+  "description": "Render animation frames via puppeteer-lottie and assemble into a GIF using ffmpeg.",
+  "author": "open-lottie-ui",
+  "homepage": "https://github.com/open-lottie-ui/open-lottie-ui",
+  "license": "MIT",
+
+  "requires": {
+    "node_modules": ["puppeteer-lottie"],
+    "binaries": ["ffmpeg"],
+    "python_packages": []
+  },
+
+  "surfaces": [
+    { "type": "library_item_action", "label": "Export GIF", "icon": "film" }
+  ],
+
+  "io": {
+    "input": "lottie",
+    "output": "gif",
+    "params_schema": {
+      "type": "object",
+      "properties": {
+        "width":       { "type": "integer", "minimum": 16, "maximum": 4096, "default": 320 },
+        "frame_rate":  { "type": "integer", "minimum": 6, "maximum": 60, "default": 30 },
+        "loops":       { "type": "integer", "minimum": 0, "maximum": 100, "default": 0, "description": "0 = infinite" },
+        "background":  { "type": "string", "default": "transparent" }
+      }
+    }
+  },
+
+  "run": {
+    "type": "node",
+    "entry": "src/index.ts"
+  }
+}
