@@ -1,0 +1,70 @@
+{
+  "$schema_note": "Seed prompts surfaced in the /generate UI as a row of 'Try this' chips. Each entry is non-binding; they're just suggestions. The UI clicks them into the textarea and lets the user edit before submitting.",
+  "version": 1,
+  "starters": [
+    {
+      "id": "loader-spin",
+      "label": "Spinning loader",
+      "prompt": "A subtle circular loader: a thin teal arc rotating 360° smoothly, looped seamlessly over 60 frames at 30 fps. 200×200, transparent background.",
+      "tier_hint": 1,
+      "template_hint": null,
+      "tags": ["loader", "rotate"]
+    },
+    {
+      "id": "success-check",
+      "label": "Success checkmark",
+      "prompt": "A green checkmark drawing on over 30 frames, then a small bounce on completion. Stroke ~6px, rounded caps. Hold for 30 frames after.",
+      "tier_hint": 3,
+      "template_hint": "draw-on-path",
+      "tags": ["success", "draw-on", "checkmark"]
+    },
+    {
+      "id": "color-pulse",
+      "label": "Color-pulsing dot",
+      "prompt": "A circle that cross-fades between brand teal (#14B8A6) and a darker variant, looped seamlessly over 60 frames.",
+      "tier_hint": 1,
+      "template_hint": "color-pulse",
+      "tags": ["pulse", "loop", "teal"]
+    },
+    {
+      "id": "scale-bounce",
+      "label": "Scale bounce",
+      "prompt": "A solid square that scales 100 → 110 → 100 with overshoot easing over 48 frames, looped.",
+      "tier_hint": 1,
+      "template_hint": "scale-bounce",
+      "tags": ["scale", "bounce", "loop"]
+    },
+    {
+      "id": "slide-in-toast",
+      "label": "Slide-in toast",
+      "prompt": "A rounded rectangle (toast shape, 240×64) slides in from the right edge to its rest position over 30 frames with ease-out cubic. Holds.",
+      "tier_hint": 3,
+      "template_hint": "slide-in",
+      "tags": ["slide", "toast", "ui"]
+    },
+    {
+      "id": "bell-shake",
+      "label": "Notification bell shake",
+      "prompt": "A bell icon that shakes (rotation ±15°) for ~24 frames then settles. Add a small dot pulse for 'new notification' indicator.",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["bell", "shake", "notification"]
+    },
+    {
+      "id": "draw-on-circle",
+      "label": "Draw-on circle outline",
+      "prompt": "A circle outline drawn on (trim 0 → 100) over 60 frames. Stroke ~4px, teal. After complete, fade to 50% opacity over 15 frames.",
+      "tier_hint": 1,
+      "template_hint": "draw-on-path",
+      "tags": ["draw-on", "circle", "outline"]
+    },
+    {
+      "id": "heart-like",
+      "label": "Heart 'like' tap",
+      "prompt": "A red heart that scales from 0 → 110 → 100 over 18 frames, with a slight rotation flick at the peak. Then a tiny radial burst of small dots fading out for 12 frames.",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["heart", "like", "burst"]
+    }
+  ]
+}

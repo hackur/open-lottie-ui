@@ -1,6 +1,6 @@
 # Documentation index
 
-Index for `docs/`. The whole research → planning loop lives here. Read top to bottom for the full story; jump in via the "If you only read three" list at the bottom.
+Index for `docs/`. Read top to bottom for the full story; jump in via the "If you only read three" list at the bottom.
 
 ## Vision
 
@@ -11,9 +11,9 @@ Index for `docs/`. The whole research → planning loop lives here. Read top to 
 - [`research/01-lottie-format.md`](research/01-lottie-format.md) — Bodymovin JSON schema fundamentals.
 - [`research/02-players.md`](research/02-players.md) — Lottie runtime libraries (lottie-web, dotlottie-web, Skottie, …).
 - [`research/03-libraries.md`](research/03-libraries.md) — free animation libraries / marketplaces.
-- [`research/04-dotlottie.md`](research/04-dotlottie.md) — `.lottie` container format (manifest, themes, state machines).
+- [`research/04-dotlottie.md`](research/04-dotlottie.md) — `.lottie` container format.
 - [`research/05-conversions.md`](research/05-conversions.md) — SVG ↔ Lottie tooling.
-- [`research/06-programmatic-generation.md`](research/06-programmatic-generation.md) — code-based generation (python-lottie, bodymovin-python).
+- [`research/06-programmatic-generation.md`](research/06-programmatic-generation.md) — code-based generation.
 - [`research/07-optimize-validate.md`](research/07-optimize-validate.md) — optimization, linting, validation.
 - [`research/08-editors.md`](research/08-editors.md) — open-source editors (Glaxnimate).
 - [`research/09-claude-cli.md`](research/09-claude-cli.md) — Claude CLI invocation & stream-json.
@@ -23,7 +23,7 @@ Index for `docs/`. The whole research → planning loop lives here. Read top to 
 - [`research/13-hitl-ux.md`](research/13-hitl-ux.md) — human-in-the-loop approval UX.
 - [`research/14-headless-render.md`](research/14-headless-render.md) — headless rendering for thumbnails.
 - [`research/15-visual-diff.md`](research/15-visual-diff.md) — visual diffing for animations.
-- [`research/16-licenses.md`](research/16-licenses.md) — license compatibility (MIT-vs-AGPL/GPL plugins).
+- [`research/16-licenses.md`](research/16-licenses.md) — license compatibility (MIT vs AGPL/GPL plugins).
 - [`research/17-risks.md`](research/17-risks.md) — open risks & how we de-risk.
 - [`research/18-prior-art.md`](research/18-prior-art.md) — Lottielab, Jitter, Rive, Haiku, etc.
 - [`research/19-community.md`](research/19-community.md) — orgs, hubs, conformance suite.
@@ -53,7 +53,26 @@ Index for `docs/`. The whole research → planning loop lives here. Read top to 
 
 ## Decisions (ADRs)
 
-- [`decisions/`](decisions/README.md) — index of architecture decisions.
+- [`decisions/`](decisions/README.md) — 7 ADRs (Next.js, FS-as-DB, Claude CLI, lottie-web preview, .lottie export, no auth, manifest plugins).
+
+## Reference
+
+- [`wireframes.md`](wireframes.md) — ASCII sketches of the key screens.
+- [`glossary.md`](glossary.md) — term definitions.
+- [`faq.md`](faq.md) — quick answers.
+- [`brainstorm.md`](brainstorm.md) — questions to bring to the next user session.
+
+## Outside `docs/` — concrete artifacts the docs reference
+
+- [`../prompts/system/`](../prompts/system/) — system prompts (`default.md`, `full-schema.md`).
+- [`../prompts/templates/`](../prompts/templates/) — Tier 1 parameterized templates (5 stubs).
+- [`../prompts/few-shot/`](../prompts/few-shot/) — few-shot corpus.
+- [`../prompts/starter-prompts.json`](../prompts/starter-prompts.json) — UI seed prompts.
+- [`../plugins/`](../plugins/) — 8 plugin manifest stubs.
+- [`../packages/lottie-tools/licenses.json`](../packages/lottie-tools/licenses.json) — license registry.
+- [`../seed-library/`](../seed-library/) — CC0 starter animations.
+- [`../scripts/detect-tools.sh`](../scripts/detect-tools.sh) — host tool probe.
+- [`../CLAUDE.md`](../CLAUDE.md) — project memory for Claude Code sessions.
 
 ---
 
@@ -61,18 +80,18 @@ Index for `docs/`. The whole research → planning loop lives here. Read top to 
 
 1. [`00-vision.md`](00-vision.md) — what we're building and why.
 2. [`architecture/mvp.md`](architecture/mvp.md) — what week-1 looks like concretely.
-3. [`architecture/system.md`](architecture/system.md) — the system diagram.
+3. [`brainstorm.md`](brainstorm.md) — what to decide next.
 
-## Top open questions to bring to the brainstorming session
+## Top open questions
 
-(Pulled from `research/17-risks.md` and design choices needing the user's input.)
+See [`brainstorm.md`](brainstorm.md). The five must-answers for kicking off M1:
 
-1. **Claude reliability for raw Lottie JSON.** Are we OK starting with Tier 3 only and falling back to templates if it doesn't work, or do we want to invest in templates *first* before any LLM call lands?
-2. **Single-user vs team.** v1 is single-user / localhost. Confirm the "Sam → CI integration" persona is M3+, not earlier.
-3. **Bundled seed library.** Are we OK shipping ~5–10 small CC0/MIT animations in the repo for first-run experience, or do we want a separate `seed-library` repo?
-4. **Plugin manifest format.** Is the v1 manifest in `architecture/plugins.md` flexible enough? Anything missing for the user's intended community-tool integrations?
-5. **`.lottie` vs `.json` default export.** ADR-005 says `.lottie`. Confirm or flip.
+1. Tier strategy — templates first, raw JSON first, or both?
+2. Bundled seed library — in-repo or separate?
+3. `.lottie` vs `.json` default export.
+4. Variant generation in MVP or M2?
+5. Plugin system in M1 (real loader) or M2 (hardcoded for M1)?
 
 ---
 
-*Last updated: 2026-04-27. Each entry above corresponds to a file under `docs/`. Commits are intentionally small (one or two docs per commit) so history doubles as a research log.*
+*Last updated: 2026-04-27. Each entry above corresponds to a file under `docs/` (or, for "concrete artifacts", to a sibling directory).*

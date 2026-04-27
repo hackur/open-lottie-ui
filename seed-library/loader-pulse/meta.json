@@ -1,0 +1,24 @@
+{
+  "id": "loader-pulse",
+  "title": "Loader Pulse",
+  "tags": ["loader", "pulse", "ui", "seed"],
+  "source": "seed",
+  "source_url": null,
+  "license_id": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution_required": false,
+  "attribution_text": null,
+  "imported_at": "2026-04-27T00:00:00Z",
+  "imported_by": "open-lottie-ui",
+  "content_hash": "PLACEHOLDER",
+  "intrinsic": {
+    "fr": 30,
+    "ip": 0,
+    "op": 60,
+    "w": 200,
+    "h": 200,
+    "layer_count": 1,
+    "size_bytes": null
+  },
+  "from_generation": null
+}
