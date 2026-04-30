@@ -215,9 +215,12 @@ export async function convertVideoToLottie(
       );
     }
 
-    if (entries.length >= maxFrames) {
+    if (entries.length === maxFrames) {
+      // We hit the cap exactly — maybe the source was longer, maybe it just
+      // happens to fit. Surface as a soft warning so callers can re-import
+      // with a larger cap if needed.
       warnings.push(
-        `Truncated to maxFrames=${maxFrames}; longer inputs are clipped.`,
+        `Reached maxFrames=${maxFrames}; if the source was longer it has been clipped.`,
       );
     }
 

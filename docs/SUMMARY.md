@@ -50,6 +50,8 @@ Index for `docs/`. Read top to bottom for the full story; jump in via the "If yo
 - [`workflows/generate-approve.md`](workflows/generate-approve.md) — generate-and-approve cycle.
 - [`workflows/remix.md`](workflows/remix.md) — remix existing animation.
 - [`workflows/import.md`](workflows/import.md) — import & catalog.
+- [`workflows/lottie-to-video.md`](workflows/lottie-to-video.md) — Lottie → video (ProRes/WebM/MP4) with alpha.
+- [`workflows/video-to-lottie.md`](workflows/video-to-lottie.md) — Video/GIF/WebP → Lottie (slideshow vs vector trace).
 
 ## Decisions (ADRs)
 
