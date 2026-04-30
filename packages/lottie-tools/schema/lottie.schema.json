@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://open-lottie-ui.local/schema/lottie.schema.json",
+  "$comment": "Pragmatic subset, replace with full lottie-spec when we vendor cleanly. Sourced loosely from https://github.com/lottie/lottie-spec (commit 54e831b, 2026-04-28). Validates Bodymovin top-level fields and basic shape-layer (ty: 4) structure. Permissive about everything else so that valid real-world Lottie files don't false-fail.",
+  "title": "Lottie animation (pragmatic subset)",
+  "type": "object",
+  "required": ["v", "fr", "ip", "op", "w", "h", "layers"],
+  "properties": {
+    "v": {
+      "description": "Bodymovin / Lottie version string, e.g. '5.12.0'.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+(\\.[0-9]+)?$"
+    },
+    "fr": {
+      "description": "Frame rate (frames per second).",
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "ip": {
+      "description": "In point — first frame of the animation.",
+      "type": "number"
+    },
+    "op": {
+      "description": "Out point — last frame of the animation.",
+      "type": "number"
+    },
+    "w": {
+      "description": "Composition width in pixels.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "h": {
+      "description": "Composition height in pixels.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "nm": { "type": "string" },
+    "ddd": { "type": "integer", "enum": [0, 1] },
+    "assets": { "type": "array" },
+    "fonts": { "type": "object" },
+    "chars": { "type": "array" },
+    "markers": { "type": "array" },
+    "meta": { "type": "object" },
+    "layers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/layer" }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "layer": {
+      "type": "object",
+      "required": ["ty"],
+      "properties": {
+        "ty": {
+          "description": "Layer type. 0=precomp, 1=solid, 2=image, 3=null, 4=shape, 5=text, 6=audio.",
+          "type": "integer"
+        },
+        "nm": { "type": "string" },
+        "ind": { "type": "integer" },
+        "parent": { "type": "integer" },
+        "sr": { "type": "number" },
+        "ip": { "type": "number" },
+        "op": { "type": "number" },
+        "st": { "type": "number" },
+        "bm": { "type": "integer" },
+        "ddd": { "type": "integer", "enum": [0, 1] },
+        "ao": { "type": "integer", "enum": [0, 1] },
+        "hd": { "type": "boolean" },
+        "ks": { "$ref": "#/$defs/transform" },
+        "shapes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/shapeItem" }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "ty": { "const": 4 } }, "required": ["ty"] },
+          "then": { "required": ["ks", "shapes"] }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "transform": {
+      "description": "Layer transform — keys are mostly animated-value containers.",
+      "type": "object",
+      "properties": {
+        "o": { "$ref": "#/$defs/animatedValue" },
+        "r": { "$ref": "#/$defs/animatedValue" },
+        "p": { "$ref": "#/$defs/animatedValue" },
+        "a": { "$ref": "#/$defs/animatedValue" },
+        "s": { "$ref": "#/$defs/animatedValue" },
+        "sk": { "$ref": "#/$defs/animatedValue" },
+        "sa": { "$ref": "#/$defs/animatedValue" }
+      },
+      "additionalProperties": true
+    },
+    "animatedValue": {
+      "description": "Either a static value (a:0) or animated keyframe array (a:1).",
+      "type": "object",
+      "properties": {
+        "a": { "type": "integer", "enum": [0, 1] },
+        "k": {},
+        "ix": { "type": "integer" },
+        "x": {}
+      },
+      "additionalProperties": true
+    },
+    "shapeItem": {
+      "description": "Polymorphic shape item discriminated by 'ty' (string).",
+      "type": "object",
+      "required": ["ty"],
+      "properties": {
+        "ty": { "type": "string" },
+        "nm": { "type": "string" },
+        "hd": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  }
+}
