@@ -1,5 +1,7 @@
 /**
- * Render Lottie frames to PNG buffers via the `inlottie` CLI (Rust renderer).
+ * Render Lottie frames to PNG buffers, preferring the `inlottie` CLI (Rust
+ * renderer) and falling back to a pure-JS rasteriser when inlottie can't run
+ * headlessly.
  *
  * `inlottie` invocation shape (from `inlottie --help` on v0.1.9-g):
  *   inlottie [<path-to-file>]
@@ -7,8 +9,10 @@
  * The shipped 0.1.9-g build is a windowed viewer with no headless flags; we
  * still spawn it with a few well-known flag layouts (newer in-development builds
  * surface them) so that an operator who upgrades inlottie picks up rendering
- * automatically. If none of the invocations produces a PNG, we raise a
- * `RendererUnavailableError` and the API layer translates that to HTTP 503.
+ * automatically. If none of the invocations produces a PNG and the
+ * `OPEN_LOTTIE_DIFF_FALLBACK` mode allows it, we route the same frame through
+ * `./fallback-renderer.ts` (pngjs-only). Operators who want hard failures (and
+ * a 503 from the API) can set `OPEN_LOTTIE_DIFF_FALLBACK=off`.
  *
  * Frames are cached on disk under `.cache/frames/<contentHash>/<frame>@<width>.png`
  * so repeated diff calls (or replays after an admin reload) are free.
@@ -22,6 +26,7 @@ import path from "node:path";
 
 import { PATHS } from "../paths.ts";
 import { pathExists, writeFileAtomic } from "../data/atomic.ts";
+import { renderFrameFallback } from "./fallback-renderer.ts";
 import { RendererUnavailableError } from "./types.ts";
 
 /** Default to the location requested by the project; overridable via env. */
@@ -29,6 +34,21 @@ const DEFAULT_BIN = path.join(os.homedir(), ".cargo", "bin", "inlottie");
 
 function inlottieBin(): string {
   return process.env.INLOTTIE_BIN || DEFAULT_BIN;
+}
+
+/**
+ * Process-wide circuit breaker. Pinned to globalThis so HMR doesn't reset it.
+ * Once any spawn fails to produce a PNG (the shipped 0.1.9-g `inlottie` is a
+ * GUI viewer with no headless flags), every subsequent call short-circuits to
+ * `RendererUnavailableError` so we don't burn one timeout per frame.
+ */
+const RENDERER_FLAG = Symbol.for("open-lottie.diffRendererUnavailable");
+type GlobalWithFlag = typeof globalThis & { [RENDERER_FLAG]?: boolean };
+function rendererKnownBad(): boolean {
+  return Boolean((globalThis as GlobalWithFlag)[RENDERER_FLAG]);
+}
+function markRendererBad(): void {
+  (globalThis as GlobalWithFlag)[RENDERER_FLAG] = true;
 }
 
 interface AnimationHeader {
@@ -182,7 +202,10 @@ async function tryRenderFrame(
   for (const args of layouts) {
     // Wipe any prior partial output before each attempt.
     await fs.rm(outPath, { force: true }).catch(() => {});
-    await runInlottie(args, 15_000);
+    // 2s per attempt. The 0.1.9-g viewer never returns headlessly, so any
+    // longer is wasted wall-clock; legitimate headless versions render in
+    // a few hundred ms.
+    await runInlottie(args, 2_000);
     if (await fileNonEmpty(outPath)) return true;
   }
   return false;
@@ -202,6 +225,18 @@ export interface RenderFramesOptions {
   contentHash: string;
   /** Render width in CSS pixels. */
   width: number;
+  /**
+   * Parsed animation JSON, supplied so the pure-JS fallback can rasterise
+   * frames when inlottie can't render headlessly. Caller passes the same JSON
+   * that's already on disk at `animationPath`.
+   */
+  animation?: unknown;
+}
+
+/** Returns true if the pure-JS fallback path is enabled. Default: on. */
+function fallbackEnabled(): boolean {
+  const v = (process.env.OPEN_LOTTIE_DIFF_FALLBACK || "").toLowerCase();
+  return v !== "off" && v !== "0" && v !== "false";
 }
 
 /**
@@ -221,11 +256,15 @@ export async function renderFrames(
   if (!existsSync(animationPath)) {
     throw new Error(`Animation file not found: ${animationPath}`);
   }
-  if (!existsSync(inlottieBin())) {
-    throw new RendererUnavailableError(
-      `inlottie not found at ${inlottieBin()}. Install with \`cargo install inlottie\` or set INLOTTIE_BIN.`,
-    );
-  }
+
+  const inlottieMissing = !existsSync(inlottieBin());
+  if (inlottieMissing) markRendererBad();
+
+  // Compute the on-disk render dimensions once. The caller picks the width;
+  // the height matches the animation aspect.
+  const header = readAnimationHeader(opts.animation);
+  const aspect = header.h / header.w;
+  const renderHeight = Math.max(1, Math.round(opts.width * aspect));
 
   const out: Buffer[] = [];
   const cacheDir = frameCacheDir(opts.contentHash);
@@ -237,18 +276,37 @@ export async function renderFrames(
       out.push(await fs.readFile(cachePath));
       continue;
     }
-    const ok = await tryRenderFrame(animationPath, frame, opts.width, cachePath);
-    if (!ok) {
-      throw new RendererUnavailableError(
-        `inlottie at ${inlottieBin()} did not produce a PNG for frame ${frame}. ` +
-          `The bundled v0.1.9-g build is a viewer with no headless flags; ` +
-          `upgrade inlottie or set INLOTTIE_BIN to a renderer that supports ` +
-          `\`--frame <n> --width <w> --output <path> <file>\`.`,
-      );
+
+    let buf: Buffer | null = null;
+
+    // Try inlottie first when it looks usable.
+    if (!rendererKnownBad()) {
+      const ok = await tryRenderFrame(animationPath, frame, opts.width, cachePath);
+      if (ok) {
+        buf = await fs.readFile(cachePath);
+      } else {
+        // First failure flips the global breaker so subsequent diff requests
+        // (different generations, different frames) fail fast and skip the
+        // doomed inlottie spawn.
+        markRendererBad();
+      }
     }
-    const buf = await fs.readFile(cachePath);
-    // Make sure the cache write was atomic (rename-into-place) so partial
-    // files never linger.
+
+    // Fall back to the pure-JS rasteriser if inlottie didn't deliver.
+    if (!buf) {
+      if (!fallbackEnabled() || opts.animation === undefined) {
+        throw new RendererUnavailableError(
+          inlottieMissing
+            ? `inlottie not found at ${inlottieBin()} and the JS fallback is disabled or unavailable. ` +
+              `Install with \`cargo install inlottie\`, set INLOTTIE_BIN, or enable the fallback.`
+            : `inlottie at ${inlottieBin()} did not produce a PNG (the bundled v0.1.9-g build is ` +
+              `a GUI viewer) and the JS fallback is disabled or no animation JSON was supplied.`,
+        );
+      }
+      buf = renderFrameFallback(opts.animation, frame, opts.width, renderHeight);
+    }
+
+    // Atomic write so a half-flushed cache file never lingers.
     await writeFileAtomic(cachePath, buf);
     out.push(buf);
   }

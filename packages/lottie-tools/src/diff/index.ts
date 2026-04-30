@@ -87,8 +87,16 @@ export async function diffAnimations(opts: DiffOptions): Promise<DiffResult> {
   ]);
 
   const [baseBufs, genBufs] = await Promise.all([
-    renderFrames(basePath, frames, { contentHash: opts.baseHash, width }),
-    renderFrames(genPath, frames, { contentHash: opts.genHash, width }),
+    renderFrames(basePath, frames, {
+      contentHash: opts.baseHash,
+      width,
+      animation: opts.baseAnimation,
+    }),
+    renderFrames(genPath, frames, {
+      contentHash: opts.genHash,
+      width,
+      animation: opts.genAnimation,
+    }),
   ]);
 
   const frameDiffs = compareFrames(baseBufs, genBufs, {

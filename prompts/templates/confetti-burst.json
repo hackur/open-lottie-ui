@@ -1,0 +1,149 @@
+{
+  "id": "confetti-burst",
+  "name": "Confetti Burst",
+  "description": "A success celebration: 8 colored dots burst outward from canvas center on fixed 45° angles, fading in the last third. Authored for count=8; the count param is metadata only in M1.",
+  "params_schema": {
+    "type": "object",
+    "required": ["duration_frames"],
+    "properties": {
+      "duration_frames": { "type": "integer", "minimum": 12, "maximum": 600, "default": 45 },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 240 },
+      "count":           { "type": "integer", "minimum": 4, "maximum": 16, "default": 8 },
+      "colors":          {
+        "type": "array",
+        "minItems": 4,
+        "items": { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+        "default": [[0.13, 0.74, 0.91, 1], [0.95, 0.55, 0.18, 1], [0.93, 0.32, 0.55, 1], [0.97, 0.85, 0.20, 1]]
+      }
+    }
+  },
+  "body": {
+    "v": "5.12.0",
+    "fr": 30,
+    "ip": 0,
+    "op": "{{duration_frames}}",
+    "w": "{{size}}",
+    "h": "{{size}}",
+    "nm": "confetti-burst",
+    "ddd": 0,
+    "assets": [],
+    "layers": [
+      {
+        "ddd": 0,
+        "ind": 1,
+        "ty": 4,
+        "nm": "burst",
+        "sr": 1,
+        "ks": {
+          "o": {
+            "a": 1,
+            "k": [
+              { "t": 0,  "s": [100], "i": { "x": [0.5], "y": [1] }, "o": { "x": [0.5], "y": [0] } },
+              { "t": 30, "s": [100], "i": { "x": [0.5], "y": [1] }, "o": { "x": [0.5], "y": [0] } },
+              { "t": "{{duration_frames}}", "s": [0] }
+            ]
+          },
+          "r": { "a": 0, "k": 0 },
+          "p": { "a": 0, "k": [120, 120, 0] },
+          "a": { "a": 0, "k": [0, 0, 0] },
+          "s": { "a": 0, "k": [100, 100, 100] }
+        },
+        "ao": 0,
+        "shapes": [
+          {
+            "ty": "gr",
+            "nm": "dot-0",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [16, 16] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.0}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [80, 0] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-1",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [14, 14] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.1}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [56, -56] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-2",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [16, 16] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.2}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [0, -80] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-3",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [14, 14] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.3}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [-56, -56] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-4",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [16, 16] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.0}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [-80, 0] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-5",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [14, 14] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.1}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [-56, 56] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-6",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [16, 16] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.2}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [0, 80] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "gr",
+            "nm": "dot-7",
+            "it": [
+              { "ty": "el", "p": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [14, 14] }, "nm": "Ellipse" },
+              { "ty": "fl", "o": { "a": 0, "k": 100 }, "c": { "a": 0, "k": "{{colors.3}}" }, "nm": "Fill" },
+              { "ty": "tr", "p": { "a": 1, "k": [{ "t": 0, "s": [0, 0], "i": { "x": [0.2, 0.2], "y": [1, 1] }, "o": { "x": [0.6, 0.6], "y": [0, 0] } }, { "t": "{{duration_frames}}", "s": [56, 56] }] }, "a": { "a": 0, "k": [0, 0] }, "s": { "a": 0, "k": [100, 100] }, "r": { "a": 0, "k": 0 }, "o": { "a": 0, "k": 100 }, "nm": "Transform" }
+            ]
+          },
+          {
+            "ty": "tr",
+            "p": { "a": 0, "k": [0, 0] },
+            "a": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [100, 100] },
+            "r": { "a": 0, "k": 0 },
+            "o": { "a": 0, "k": 100 },
+            "nm": "Transform"
+          }
+        ],
+        "ip": 0,
+        "op": "{{duration_frames}}",
+        "st": 0,
+        "bm": 0
+      }
+    ],
+    "markers": [],
+    "meta": {
+      "g": "open-lottie-ui",
+      "a": "open-lottie-ui template",
+      "k": "confetti-burst template",
+      "count": "{{count}}"
+    }
+  }
+}

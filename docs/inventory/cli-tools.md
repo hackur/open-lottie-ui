@@ -31,31 +31,28 @@ These are external binaries we shell out to. The app degrades gracefully when th
 
 ## Tool detection at startup
 
-On boot, the app probes each known tool:
+On boot, the app probes each known tool via `apps/admin/lib/detect-tools.ts`:
 
 ```ts
-async function probeTools() {
-  return {
-    claude: await which("claude"),
-    ffmpeg: await which("ffmpeg"),
-    glaxnimate: await which("glaxnimate"),
-    dotlottie: await which("dotlottie"),
-    python: await which("python3"),
-    bodymovinPython: await pythonImportable("bodymovin"),
-    pythonLottie: await pythonImportable("lottie"),
-  };
-}
+const TOOLS = [
+  { name: "claude", cmd: "claude", args: ["--version"] },
+  { name: "ffmpeg", cmd: "ffmpeg", args: ["-version"] },
+  { name: "python3", cmd: "python3", args: ["--version"] },
+  { name: "inlottie", cmd: "inlottie", args: ["--version"] },
+  { name: "glaxnimate", cmd: "glaxnimate", args: ["--version"],
+    fallbacks: ["/Applications/glaxnimate.app/Contents/MacOS/glaxnimate"] },
+];
 ```
 
-Results are surfaced on `/settings` as a checklist with install hints. Plugins that need a missing tool render disabled with a tooltip.
+Each tool's resolved path is exposed via `resolveTool(name)`; plugins use that path to spawn the binary directly (avoiding PATH lookup at request time). Results are surfaced on `/settings` as a checklist with install hints. Plugins that need a missing tool render disabled.
 
 ## Why each tool is here
 
-- `claude` — without it the project is a static gallery. Required.
+- `claude` — without it Tier-3 generation is unavailable. Tier-1 templates still work standalone.
 - `ffmpeg` — without it we can't export GIF/MP4. Render-as-frames still works.
-- `glaxnimate` — power-user escape hatch. Optional.
-- `dotlottie-rs` CLI — alternative to JS for fast `.lottie` packing and ThorVG rendering. Optional.
-- `python-lottie` / `bodymovin-python` — Tier 2 prompting backends. Optional but high-value.
+- `glaxnimate` — power-user escape hatch (open-in-editor → save-back creates a generation). Optional.
+- `python-lottie` — SVG import + library optimization plugins. AGPL-3.0 boundary preserved by spawning subprocesses (never linked).
+- `inlottie` — Rust renderer; GUI-only on macOS. Headless rasterization is not currently wired; revisit if a headless backend appears.
 
 ## Documentation we publish
 

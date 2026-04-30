@@ -1,0 +1,31 @@
+{
+  "id": "error-shake",
+  "title": "Error Shake",
+  "tags": [
+    "error",
+    "shake",
+    "x",
+    "fail",
+    "ui",
+    "seed"
+  ],
+  "source": "seed",
+  "source_url": null,
+  "license_id": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution_required": false,
+  "attribution_text": null,
+  "imported_at": "2026-04-29T00:00:00Z",
+  "imported_by": "open-lottie-ui",
+  "content_hash": "sha256:063dc6dc97759728f14dd8e83c8aa1616a5779be62edee2aa07caacbd9208a5a",
+  "intrinsic": {
+    "fr": 30,
+    "ip": 0,
+    "op": 30,
+    "w": 200,
+    "h": 200,
+    "layer_count": 1,
+    "size_bytes": 1378
+  },
+  "from_generation": null
+}

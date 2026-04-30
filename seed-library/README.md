@@ -9,6 +9,11 @@ A handful of small CC0 / MIT-licensed Lottie files shipped with the repo so the 
 | `loader-pulse` | CC0-1.0 | Hand-rolled by us | A pulsing circle. Validates against lottie-spec; renders identically in lottie-web and dotlottie-web. |
 | `checkmark-success` | CC0-1.0 | Hand-rolled by us | A green checkmark that draws on via Trim Paths over 45 frames, then a small scale bounce. |
 | `spinner-arc` | CC0-1.0 | Hand-rolled by us | A teal 3/4-circle arc rotating 360° over 60 frames; seamlessly loopable. |
+| `heart-beat` | CC0-1.0 | Hand-rolled by us | A rose-red heart double-beating (100 → 120 → 100 → 115 → 100) over 36 frames. Filled `sh` path. |
+| `success-burst` | CC0-1.0 | Hand-rolled by us | Green circle pops in with overshoot, white check draws on, then both gently breathe. 60 frames, 2 layers. |
+| `typing-dots` | CC0-1.0 | Hand-rolled by us | Three grey dots pulsing opacity in sequence with a 10-frame phase offset. Loops. 3 layers. |
+| `error-shake` | CC0-1.0 | Hand-rolled by us | A red X icon shaking ±12° four times then settling, cubic ease per step. 30 frames. |
+| `progress-bar` | CC0-1.0 | Hand-rolled by us | A teal rounded-rect fill growing 0 → 360 px on a dim track, ease-out cubic. 400×80 canvas. |
 
 ## Adding a new seed
 

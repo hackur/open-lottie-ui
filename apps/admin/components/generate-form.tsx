@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
+import { GeneratePreview } from "@/components/generate-preview";
 
 type Starter = {
   id: string;
@@ -146,31 +147,36 @@ export function GenerateForm({
       </div>
 
       {tier === 1 && activeTemplate ? (
-        <div className="space-y-4">
-          <div>
-            <label className="mb-2 block text-xs uppercase tracking-wider text-[var(--color-fg-faint)]">
-              Template
-            </label>
-            <select value={templateId ?? ""} onChange={(e) => setTemplateId(e.target.value || null)} className="w-full">
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.id}
-                </option>
-              ))}
-            </select>
-            <p className="mt-1 text-xs text-[var(--color-fg-muted)]">{activeTemplate.description}</p>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="space-y-4">
+            <div>
+              <label className="mb-2 block text-xs uppercase tracking-wider text-[var(--color-fg-faint)]">
+                Template
+              </label>
+              <select value={templateId ?? ""} onChange={(e) => setTemplateId(e.target.value || null)} className="w-full">
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.id}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-[var(--color-fg-muted)]">{activeTemplate.description}</p>
+            </div>
+            <ParamForm schema={activeTemplate.schema} values={params} onChange={setParam} />
+            <div>
+              <label className="mb-1 block text-xs uppercase tracking-wider text-[var(--color-fg-faint)]">
+                Title (optional)
+              </label>
+              <input
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder={`${activeTemplate.id} variation`}
+                className="w-full"
+              />
+            </div>
           </div>
-          <ParamForm schema={activeTemplate.schema} values={params} onChange={setParam} />
           <div>
-            <label className="mb-1 block text-xs uppercase tracking-wider text-[var(--color-fg-faint)]">
-              Title (optional)
-            </label>
-            <input
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder={`${activeTemplate.id} variation`}
-              className="w-full"
-            />
+            <GeneratePreview templateId={activeTemplate.id} params={params} />
           </div>
         </div>
       ) : (
@@ -221,7 +227,7 @@ export function GenerateForm({
           disabled={submitting || (tier === 3 && !prompt.trim())}
           className="rounded-md bg-[var(--color-accent)] px-5 py-2 text-sm font-medium text-[var(--color-accent-fg)]"
         >
-          {submitting ? "Generating…" : tier === 1 ? "Render template" : "Send to Claude"}
+          {submitting ? "Generating…" : tier === 1 ? "Save to review queue" : "Send to Claude"}
         </button>
         {error && <span className="text-sm text-[var(--color-danger)]">{error}</span>}
       </div>

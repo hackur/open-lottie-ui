@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LottiePlayer } from "@/components/lottie-player";
+import { VisualDiff } from "@/components/visual-diff";
 import { clsx } from "clsx";
 import type { GenerationMeta } from "@open-lottie/lottie-tools/data";
 
@@ -270,6 +271,10 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
           </div>
         </div>
       </div>
+
+      {meta.base_id && animation != null ? (
+        <VisualDiff generationId={meta.id} />
+      ) : null}
 
       <div className="mt-6 grid grid-cols-2 gap-4">
         <div>

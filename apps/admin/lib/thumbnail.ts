@@ -16,9 +16,35 @@ import path from "node:path";
 import { PATHS } from "@open-lottie/lottie-tools";
 import { resolveTool } from "@/lib/detect-tools";
 
-const RENDER_TIMEOUT_MS = 10_000;
+const RENDER_TIMEOUT_MS = 2_500;
 const DEFAULT_WIDTH = 256;
 const THUMBS_DIR = path.join(PATHS.cache, "thumbs");
+
+/**
+ * Process-lifetime memo of cache paths we've already tried and failed to
+ * render. Prevents the API endpoint from re-spawning `inlottie` on every
+ * page reload. Cleared on server restart so a fresh `inlottie` install
+ * picks up automatically next dev cycle.
+ */
+const failedOnce = new Set<string>();
+
+/**
+ * Process-wide circuit breaker. The shipped `inlottie` builds we've seen
+ * are GUI viewers with no headless flags — every spawn either hangs the
+ * window manager or exits with "File format is not supported". After the
+ * first failure we remember and short-circuit all subsequent calls.
+ *
+ * Pinned to globalThis so Next.js HMR doesn't reset it (avoids burning
+ * one timeout per hot-reload during development).
+ */
+const RENDERER_FLAG = Symbol.for("open-lottie.thumbRendererUnavailable");
+type GlobalWithRenderer = typeof globalThis & { [RENDERER_FLAG]?: boolean };
+function rendererKnownBad(): boolean {
+  return Boolean((globalThis as GlobalWithRenderer)[RENDERER_FLAG]);
+}
+function markRendererBad(): void {
+  (globalThis as GlobalWithRenderer)[RENDERER_FLAG] = true;
+}
 
 /**
  * Strip the `sha256:` prefix and any non-hex chars so the hash is safe to
@@ -180,18 +206,33 @@ export async function getOrRenderThumb(
     return { path: out, cached: true };
   }
 
+  // Process-global short-circuit: if any previous render proved the
+  // installed `inlottie` is GUI-only / can't write PNGs, every subsequent
+  // call returns null immediately so the client falls back to the live
+  // player without burning a timeout per card.
+  if (rendererKnownBad()) return null;
+
+  // Per-key memo — useful if a single animation file is malformed but
+  // others render fine.
+  if (failedOnce.has(out)) return null;
+
   // Make sure the cache dir exists before spawning.
   try {
     await fs.mkdir(THUMBS_DIR, { recursive: true });
   } catch {
+    failedOnce.add(out);
     return null;
   }
 
   // Sanity check the input animation.
   try {
     const st = await fs.stat(opts.animationPath);
-    if (!st.isFile()) return null;
+    if (!st.isFile()) {
+      failedOnce.add(out);
+      return null;
+    }
   } catch {
+    failedOnce.add(out);
     return null;
   }
 
@@ -211,6 +252,11 @@ export async function getOrRenderThumb(
     } catch {
       /* noop */
     }
+    failedOnce.add(out);
+    // First failure is enough to flip the global breaker — the renderer
+    // either isn't installed or doesn't support headless export. Either
+    // way, don't spend another 2.5s probing for the next card.
+    markRendererBad();
     return null;
   }
 

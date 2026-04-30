@@ -1,0 +1,90 @@
+{
+  "id": "shake",
+  "name": "Shake",
+  "description": "An error/notification shake: a rounded square rotates ±amplitude over 4 oscillations, then settles to 0° with a cubic ease-out. Authored for cycles=4; the cycles param is metadata only.",
+  "params_schema": {
+    "type": "object",
+    "required": ["duration_frames"],
+    "properties": {
+      "duration_frames": { "type": "integer", "minimum": 12, "maximum": 600, "default": 24 },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 200 },
+      "color":           { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+      "amplitude_deg":   { "type": "number", "minimum": 5, "maximum": 30, "default": 15 },
+      "cycles":          { "type": "integer", "minimum": 2, "maximum": 8, "default": 4 }
+    }
+  },
+  "body": {
+    "v": "5.12.0",
+    "fr": 30,
+    "ip": 0,
+    "op": "{{duration_frames}}",
+    "w": "{{size}}",
+    "h": "{{size}}",
+    "nm": "shake",
+    "ddd": 0,
+    "assets": [],
+    "layers": [
+      {
+        "ddd": 0,
+        "ind": 1,
+        "ty": 4,
+        "nm": "shape",
+        "sr": 1,
+        "ks": {
+          "o": { "a": 0, "k": 100 },
+          "r": {
+            "a": 1,
+            "k": [
+              { "t": 0,    "s": [0],                  "i": { "x": [0.4], "y": [1] }, "o": { "x": [0.6], "y": [0] } },
+              { "t": 3,    "s": ["{{amplitude_deg}}"],"i": { "x": [0.4], "y": [1] }, "o": { "x": [0.6], "y": [0] } },
+              { "t": 6,    "s": [-15],                "i": { "x": [0.4], "y": [1] }, "o": { "x": [0.6], "y": [0] } },
+              { "t": 9,    "s": [12],                 "i": { "x": [0.4], "y": [1] }, "o": { "x": [0.6], "y": [0] } },
+              { "t": 12,   "s": [-9],                 "i": { "x": [0.4], "y": [1] }, "o": { "x": [0.6], "y": [0] } },
+              { "t": 15,   "s": [6],                  "i": { "x": [0.33], "y": [1] }, "o": { "x": [0.66], "y": [0] } },
+              { "t": "{{duration_frames}}", "s": [0] }
+            ]
+          },
+          "p": { "a": 0, "k": [100, 100, 0] },
+          "a": { "a": 0, "k": [0, 0, 0] },
+          "s": { "a": 0, "k": [100, 100, 100] }
+        },
+        "ao": 0,
+        "shapes": [
+          {
+            "ty": "rc",
+            "p": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [120, 120] },
+            "r": { "a": 0, "k": 16 },
+            "nm": "Rectangle"
+          },
+          {
+            "ty": "fl",
+            "o": { "a": 0, "k": 100 },
+            "c": { "a": 0, "k": "{{color}}" },
+            "nm": "Fill"
+          },
+          {
+            "ty": "tr",
+            "p": { "a": 0, "k": [0, 0] },
+            "a": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [100, 100] },
+            "r": { "a": 0, "k": 0 },
+            "o": { "a": 0, "k": 100 },
+            "nm": "Transform"
+          }
+        ],
+        "ip": 0,
+        "op": "{{duration_frames}}",
+        "st": 0,
+        "bm": 0
+      }
+    ],
+    "markers": [],
+    "meta": {
+      "g": "open-lottie-ui",
+      "a": "open-lottie-ui template",
+      "k": "shake template",
+      "cycles": "{{cycles}}"
+    }
+  }
+}

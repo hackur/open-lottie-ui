@@ -1,0 +1,32 @@
+{
+  "id": "typing-dots",
+  "title": "Typing Dots",
+  "tags": [
+    "typing",
+    "dots",
+    "loader",
+    "wait",
+    "chat",
+    "ui",
+    "seed"
+  ],
+  "source": "seed",
+  "source_url": null,
+  "license_id": "CC0-1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "attribution_required": false,
+  "attribution_text": null,
+  "imported_at": "2026-04-29T00:00:00Z",
+  "imported_by": "open-lottie-ui",
+  "content_hash": "sha256:89a9b693c7a1d55ffd7f1be50b2b62312817b6d4d2033cde343bcee61fb9443f",
+  "intrinsic": {
+    "fr": 30,
+    "ip": 0,
+    "op": 60,
+    "w": 200,
+    "h": 200,
+    "layer_count": 3,
+    "size_bytes": 2619
+  },
+  "from_generation": null
+}

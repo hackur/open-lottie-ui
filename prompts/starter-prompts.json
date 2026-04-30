@@ -1,70 +1,239 @@
 {
   "$schema_note": "Seed prompts surfaced in the /generate UI as a row of 'Try this' chips. Each entry is non-binding; they're just suggestions. The UI clicks them into the textarea and lets the user edit before submitting.",
-  "version": 1,
+  "version": 2,
+  "categories": [
+    { "id": "loaders", "label": "Loaders & spinners" },
+    { "id": "success", "label": "Success & confirmation" },
+    { "id": "errors", "label": "Errors & warnings" },
+    { "id": "ui", "label": "UI micro-interactions" },
+    { "id": "icons", "label": "Icons & logos" },
+    { "id": "notifications", "label": "Notifications & toasts" }
+  ],
   "starters": [
     {
       "id": "loader-spin",
       "label": "Spinning loader",
       "prompt": "A subtle circular loader: a thin teal arc rotating 360° smoothly, looped seamlessly over 60 frames at 30 fps. 200×200, transparent background.",
+      "category": "loaders",
       "tier_hint": 1,
-      "template_hint": null,
-      "tags": ["loader", "rotate"]
-    },
-    {
-      "id": "success-check",
-      "label": "Success checkmark",
-      "prompt": "A green checkmark drawing on over 30 frames, then a small bounce on completion. Stroke ~6px, rounded caps. Hold for 30 frames after.",
-      "tier_hint": 3,
-      "template_hint": "draw-on-path",
-      "tags": ["success", "draw-on", "checkmark"]
+      "template_hint": "rotate-spin",
+      "tags": ["loader", "rotate", "spinner"]
     },
     {
       "id": "color-pulse",
       "label": "Color-pulsing dot",
       "prompt": "A circle that cross-fades between brand teal (#14B8A6) and a darker variant, looped seamlessly over 60 frames.",
+      "category": "loaders",
       "tier_hint": 1,
       "template_hint": "color-pulse",
-      "tags": ["pulse", "loop", "teal"]
+      "tags": ["pulse", "loop", "teal", "loader"]
+    },
+    {
+      "id": "loader-typing-dots",
+      "label": "Three-dot wait",
+      "prompt": "Three small dots in a row, each pulsing in opacity and scale on a staggered 200ms offset, looped over 60 frames at 30 fps. 240×60, transparent background.",
+      "category": "loaders",
+      "tier_hint": 1,
+      "template_hint": "typing-dots",
+      "tags": ["loader", "typing", "dots", "wait"]
+    },
+    {
+      "id": "loader-progress-bar",
+      "label": "Indeterminate progress bar",
+      "prompt": "A Material-style indeterminate progress bar: a slim rounded rect (320×4, teal) with a moving highlight that sweeps left-to-right, looped over 90 frames at 30 fps.",
+      "category": "loaders",
+      "tier_hint": 3,
+      "template_hint": "progress-bar",
+      "tags": ["loader", "progress", "bar", "material"]
+    },
+    {
+      "id": "success-check",
+      "label": "Success checkmark",
+      "prompt": "A green checkmark drawing on over 30 frames, then a small bounce on completion. Stroke ~6px, rounded caps. Hold for 30 frames after.",
+      "category": "success",
+      "tier_hint": 1,
+      "template_hint": "draw-on-path",
+      "tags": ["success", "draw-on", "checkmark"]
+    },
+    {
+      "id": "success-confetti",
+      "label": "Green confetti burst",
+      "prompt": "A radial burst of ~24 small green and teal confetti pieces erupting from center, scaling up and fading out over 36 frames. 320×320, transparent background.",
+      "category": "success",
+      "tier_hint": 1,
+      "template_hint": "confetti-burst",
+      "tags": ["success", "confetti", "burst", "celebrate"]
+    },
+    {
+      "id": "success-thumbs-up",
+      "label": "Thumbs-up bounce",
+      "prompt": "A thumbs-up icon that scales from 0 → 115 → 100 with overshoot easing over 24 frames, then a subtle wobble for 12 frames. Solid fill, brand teal.",
+      "category": "success",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["success", "thumbs-up", "bounce", "approval"]
+    },
+    {
+      "id": "success-rocket",
+      "label": "Rocket lift-off",
+      "prompt": "A small rocket icon that slides up from off-screen-bottom into view over 30 frames, with a brief exhaust trail of 3 fading dashes. Holds at top for 20 frames. 240×240.",
+      "category": "success",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["success", "rocket", "launch", "lift-off"]
+    },
+    {
+      "id": "error-shake-bell",
+      "label": "Shake bell",
+      "prompt": "A bell icon that shakes horizontally (translate ±6px, rotation ±10°) for 24 frames at 30 fps, then settles. Single trigger, no loop.",
+      "category": "errors",
+      "tier_hint": 1,
+      "template_hint": "shake",
+      "tags": ["error", "shake", "bell", "alert"]
+    },
+    {
+      "id": "error-red-x",
+      "label": "Red X with vibration",
+      "prompt": "A red X (two crossed strokes, ~6px, rounded caps) draws on over 18 frames, then vibrates with a subtle horizontal shake (±4px) for 12 frames. Holds afterward.",
+      "category": "errors",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["error", "x", "vibration", "fail"]
+    },
+    {
+      "id": "error-warning-triangle",
+      "label": "Warning triangle wobble",
+      "prompt": "A yellow warning triangle (with exclamation mark) that fades in over 12 frames, then wobbles in rotation (±5°) for 24 frames. 200×200, transparent background.",
+      "category": "errors",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["warning", "triangle", "wobble", "caution"]
     },
     {
       "id": "scale-bounce",
       "label": "Scale bounce",
       "prompt": "A solid square that scales 100 → 110 → 100 with overshoot easing over 48 frames, looped.",
+      "category": "ui",
       "tier_hint": 1,
       "template_hint": "scale-bounce",
-      "tags": ["scale", "bounce", "loop"]
+      "tags": ["scale", "bounce", "loop", "ui"]
     },
     {
       "id": "slide-in-toast",
       "label": "Slide-in toast",
       "prompt": "A rounded rectangle (toast shape, 240×64) slides in from the right edge to its rest position over 30 frames with ease-out cubic. Holds.",
-      "tier_hint": 3,
+      "category": "ui",
+      "tier_hint": 1,
       "template_hint": "slide-in",
       "tags": ["slide", "toast", "ui"]
     },
     {
-      "id": "bell-shake",
-      "label": "Notification bell shake",
-      "prompt": "A bell icon that shakes (rotation ±15°) for ~24 frames then settles. Add a small dot pulse for 'new notification' indicator.",
+      "id": "ui-button-press",
+      "label": "Button press feedback",
+      "prompt": "A rounded button (160×48, teal) that scales 100 → 96 → 100 over 12 frames on press, with a subtle inner-shadow flash. Single trigger, no loop.",
+      "category": "ui",
       "tier_hint": 3,
       "template_hint": null,
-      "tags": ["bell", "shake", "notification"]
+      "tags": ["button", "press", "tap", "feedback"]
     },
     {
-      "id": "draw-on-circle",
-      "label": "Draw-on circle outline",
-      "prompt": "A circle outline drawn on (trim 0 → 100) over 60 frames. Stroke ~4px, teal. After complete, fade to 50% opacity over 15 frames.",
-      "tier_hint": 1,
-      "template_hint": "draw-on-path",
-      "tags": ["draw-on", "circle", "outline"]
+      "id": "ui-hover-glow",
+      "label": "Hover-glow card",
+      "prompt": "A card outline (220×140, 12px radius) that gains a soft teal glow (blur ~16px) over 18 frames, then holds. Subtle scale 100 → 102.",
+      "category": "ui",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["hover", "glow", "card", "highlight"]
+    },
+    {
+      "id": "ui-tab-indicator",
+      "label": "Tab indicator slide",
+      "prompt": "A short underline bar (60×3, teal) that slides horizontally 120px to its new tab position over 24 frames with ease-in-out. Holds afterward.",
+      "category": "ui",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["tab", "indicator", "slide", "navigation"]
     },
     {
       "id": "heart-like",
       "label": "Heart 'like' tap",
       "prompt": "A red heart that scales from 0 → 110 → 100 over 18 frames, with a slight rotation flick at the peak. Then a tiny radial burst of small dots fading out for 12 frames.",
+      "category": "icons",
+      "tier_hint": 1,
+      "template_hint": "heartbeat",
+      "tags": ["heart", "like", "burst", "tap"]
+    },
+    {
+      "id": "draw-on-circle",
+      "label": "Draw-on circle outline",
+      "prompt": "A circle outline drawn on (trim 0 → 100) over 60 frames. Stroke ~4px, teal. After complete, fade to 50% opacity over 15 frames.",
+      "category": "icons",
+      "tier_hint": 1,
+      "template_hint": "draw-on-path",
+      "tags": ["draw-on", "circle", "outline", "icon"]
+    },
+    {
+      "id": "icon-star-fill",
+      "label": "Star fill-burst",
+      "prompt": "A 5-pointed star outline that fills with gold over 18 frames, then emits a small radial sparkle burst of 8 points fading out for 12 frames. 200×200.",
+      "category": "icons",
       "tier_hint": 3,
       "template_hint": null,
-      "tags": ["heart", "like", "burst"]
+      "tags": ["star", "fill", "burst", "favorite"]
+    },
+    {
+      "id": "icon-bookmark-fold",
+      "label": "Bookmark fold",
+      "prompt": "A bookmark icon (ribbon shape) that flips/folds in from off-screen-top, settling with a small overshoot over 30 frames. Solid fill, brand teal.",
+      "category": "icons",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["bookmark", "fold", "save", "icon"]
+    },
+    {
+      "id": "bell-shake",
+      "label": "Notification bell shake",
+      "prompt": "A bell icon that shakes (rotation ±15°) for ~24 frames then settles. Add a small dot pulse for 'new notification' indicator.",
+      "category": "icons",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["bell", "shake", "notification", "icon"]
+    },
+    {
+      "id": "notif-badge-pop",
+      "label": "Badge pop-in",
+      "prompt": "A red circular badge with the number '1' that pops in from scale 0 → 120 → 100 over 18 frames with overshoot easing, attached to the top-right of an icon. Holds.",
+      "category": "notifications",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["badge", "pop", "notification", "counter"]
+    },
+    {
+      "id": "notif-banner-slide",
+      "label": "Notification banner slide",
+      "prompt": "A horizontal banner (360×56, rounded) slides in from the top edge over 24 frames with ease-out, holds for 60 frames, then slides back up over 18 frames.",
+      "category": "notifications",
+      "tier_hint": 1,
+      "template_hint": "slide-in",
+      "tags": ["banner", "slide", "notification", "toast"]
+    },
+    {
+      "id": "notif-unread-pulse",
+      "label": "Unread-dot pulse",
+      "prompt": "A small red dot (12×12) pulsing in opacity (60% → 100% → 60%) and scale (100 → 115 → 100), looped seamlessly over 60 frames at 30 fps.",
+      "category": "notifications",
+      "tier_hint": 1,
+      "template_hint": "color-pulse",
+      "tags": ["unread", "dot", "pulse", "notification"]
+    },
+    {
+      "id": "notif-incoming-message",
+      "label": "Incoming-message bounce",
+      "prompt": "A speech-bubble icon that drops in from above with a 2-step bounce on landing (100 → 90 → 105 → 100) over 30 frames. Then a subtle wiggle for 12 frames.",
+      "category": "notifications",
+      "tier_hint": 3,
+      "template_hint": null,
+      "tags": ["message", "bubble", "bounce", "incoming"]
     }
   ]
 }

@@ -1,0 +1,133 @@
+{
+  "id": "progress-bar",
+  "name": "Progress Bar",
+  "description": "A linear progress bar: rounded-rectangle track plus a rounded-rectangle fill that animates from 0 to 100% width over the duration. Canvas is fixed at 400×100 (a typical 4:1 bar). The size param is metadata only.",
+  "params_schema": {
+    "type": "object",
+    "required": ["duration_frames"],
+    "properties": {
+      "duration_frames": { "type": "integer", "minimum": 6, "maximum": 600, "default": 60 },
+      "size":            { "type": "integer", "minimum": 16, "maximum": 1024, "default": 200 },
+      "track_color":     { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 }, "default": [0.85, 0.88, 0.92, 1] },
+      "fill_color":      { "type": "array", "minItems": 3, "maxItems": 4, "items": { "type": "number", "minimum": 0, "maximum": 1 }, "default": [0.078, 0.722, 0.651, 1] },
+      "corner_radius":   { "type": "number", "minimum": 0, "maximum": 50, "default": 4 }
+    }
+  },
+  "body": {
+    "v": "5.12.0",
+    "fr": 30,
+    "ip": 0,
+    "op": "{{duration_frames}}",
+    "w": 400,
+    "h": 100,
+    "nm": "progress-bar",
+    "ddd": 0,
+    "assets": [],
+    "layers": [
+      {
+        "ddd": 0,
+        "ind": 1,
+        "ty": 4,
+        "nm": "track",
+        "sr": 1,
+        "ks": {
+          "o": { "a": 0, "k": 60 },
+          "r": { "a": 0, "k": 0 },
+          "p": { "a": 0, "k": [200, 50, 0] },
+          "a": { "a": 0, "k": [0, 0, 0] },
+          "s": { "a": 0, "k": [100, 100, 100] }
+        },
+        "ao": 0,
+        "shapes": [
+          {
+            "ty": "rc",
+            "p": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [360, 24] },
+            "r": { "a": 0, "k": "{{corner_radius}}" },
+            "nm": "Track"
+          },
+          {
+            "ty": "fl",
+            "o": { "a": 0, "k": 100 },
+            "c": { "a": 0, "k": "{{track_color}}" },
+            "nm": "Fill"
+          },
+          {
+            "ty": "tr",
+            "p": { "a": 0, "k": [0, 0] },
+            "a": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [100, 100] },
+            "r": { "a": 0, "k": 0 },
+            "o": { "a": 0, "k": 100 },
+            "nm": "Transform"
+          }
+        ],
+        "ip": 0,
+        "op": "{{duration_frames}}",
+        "st": 0,
+        "bm": 0
+      },
+      {
+        "ddd": 0,
+        "ind": 2,
+        "ty": 4,
+        "nm": "fill",
+        "sr": 1,
+        "ks": {
+          "o": { "a": 0, "k": 100 },
+          "r": { "a": 0, "k": 0 },
+          "p": { "a": 0, "k": [20, 50, 0] },
+          "a": { "a": 0, "k": [-180, 0, 0] },
+          "s": {
+            "a": 1,
+            "k": [
+              {
+                "t": 0,
+                "s": [0, 100, 100],
+                "i": { "x": [0.25, 0.25, 0.25], "y": [1, 1, 1] },
+                "o": { "x": [0.5, 0.5, 0.5], "y": [0, 0, 0] }
+              },
+              { "t": "{{duration_frames}}", "s": [100, 100, 100] }
+            ]
+          }
+        },
+        "ao": 0,
+        "shapes": [
+          {
+            "ty": "rc",
+            "p": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [360, 24] },
+            "r": { "a": 0, "k": "{{corner_radius}}" },
+            "nm": "Fill-rect"
+          },
+          {
+            "ty": "fl",
+            "o": { "a": 0, "k": 100 },
+            "c": { "a": 0, "k": "{{fill_color}}" },
+            "nm": "Fill"
+          },
+          {
+            "ty": "tr",
+            "p": { "a": 0, "k": [0, 0] },
+            "a": { "a": 0, "k": [0, 0] },
+            "s": { "a": 0, "k": [100, 100] },
+            "r": { "a": 0, "k": 0 },
+            "o": { "a": 0, "k": 100 },
+            "nm": "Transform"
+          }
+        ],
+        "ip": 0,
+        "op": "{{duration_frames}}",
+        "st": 0,
+        "bm": 0
+      }
+    ],
+    "markers": [],
+    "meta": {
+      "g": "open-lottie-ui",
+      "a": "open-lottie-ui template",
+      "k": "progress-bar template",
+      "size": "{{size}}"
+    }
+  }
+}
