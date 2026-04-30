@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: oklch(0.18 0.01 240);
+  --color-bg-elev: oklch(0.22 0.01 240);
+  --color-bg-elev-2: oklch(0.26 0.01 240);
+  --color-fg: oklch(0.96 0.005 240);
+  --color-fg-muted: oklch(0.72 0.01 240);
+  --color-fg-faint: oklch(0.5 0.01 240);
+  --color-border: oklch(0.32 0.01 240);
+  --color-border-strong: oklch(0.42 0.01 240);
+  --color-accent: oklch(0.78 0.14 195);
+  --color-accent-fg: oklch(0.18 0.01 240);
+  --color-success: oklch(0.78 0.18 150);
+  --color-warning: oklch(0.82 0.16 75);
+  --color-danger: oklch(0.7 0.2 25);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --radius: 8px;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+::selection { background: var(--color-accent); color: var(--color-accent-fg); }
+
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: 0.5; }
+
+input, textarea, select {
+  background: var(--color-bg-elev);
+  color: var(--color-fg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--color-accent) 30%, transparent);
+}
+
+textarea { resize: vertical; min-height: 6rem; line-height: 1.5; }
+
+kbd {
+  background: var(--color-bg-elev-2);
+  border: 1px solid var(--color-border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-fg-muted);
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-strong) transparent;
+}
