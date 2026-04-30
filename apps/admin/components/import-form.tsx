@@ -48,7 +48,8 @@ export function ImportForm() {
       </div>
 
       {(tab === "svg-file" || tab === "svg-paste") && <ImportSvg />}
-      {tab === "url" && <ImportUrl />}
+      {tab === "url-paste" && <ImportUrlPaste />}
+      {tab === "url-scan" && <ImportUrl />}
     </div>
   );
 }
