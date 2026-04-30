@@ -13,10 +13,24 @@ type Settings = {
   library_path?: string;
 };
 
+const STATUS_LABEL: Record<plugins.PluginStatus, string> = {
+  "m1-enabled": "✓ enabled",
+  "m1-stub": "◌ stub (M2)",
+  "m1-stub-needs-tool": "⚠ needs tool",
+};
+
+const STATUS_CLASS: Record<plugins.PluginStatus, string> = {
+  "m1-enabled": "text-[var(--color-success)]",
+  "m1-stub": "text-[var(--color-fg-muted)]",
+  "m1-stub-needs-tool": "text-[var(--color-warn,var(--color-fg-muted))]",
+};
+
 export default async function SettingsPage() {
   const settings = await loadSettings();
   const tools = await detectTools();
   const enabledPlugins = plugins.listPlugins();
+  const toolStatusMap = Object.fromEntries(tools.map((t) => [t.name, t.found]));
+  const allPlugins = await plugins.listPluginsWithStatus(toolStatusMap);
 
   return (
     <div className="mx-auto max-w-3xl">
