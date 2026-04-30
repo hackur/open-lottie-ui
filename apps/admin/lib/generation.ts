@@ -14,6 +14,31 @@ export async function startTier3Generation(
   prompt: string,
   model: string,
 ): Promise<void> {
+  const startedAt = Date.now();
+  const dir = (await data.getGeneration(genId)).dir;
+  const eventsPath = path.join(dir, "events.ndjson");
+
+  const log = (msg: string, extra?: unknown) => {
+    const line = extra !== undefined
+      ? `[gen ${genId} +${Date.now() - startedAt}ms] ${msg} ${JSON.stringify(extra)}`
+      : `[gen ${genId} +${Date.now() - startedAt}ms] ${msg}`;
+    console.log(line);
+  };
+
+  const recordEvent = async (ev: unknown) => {
+    try {
+      await fs.appendFile(
+        eventsPath,
+        JSON.stringify({ ts: new Date().toISOString(), elapsed_ms: Date.now() - startedAt, event: ev }) + "\n",
+        "utf8",
+      );
+    } catch {
+      /* best-effort logging; don't crash the generation if disk write fails */
+    }
+  };
+
+  log("startTier3Generation", { model, promptPreview: prompt.slice(0, 80) });
+
   const handle = startRegistered(genId, { prompt, model });
 
   const allText: string[] = [];
@@ -22,25 +47,38 @@ export async function startTier3Generation(
   let numTurns = 0;
   let durationMs = 0;
   let success = false;
+  let toolUseCount = 0;
+  let textChunks = 0;
 
   try {
     for await (const ev of handle.events) {
+      void recordEvent(ev);
       if (ev.kind === "init") {
-        // Persist the session id so the audit trail captures which Claude
-        // session produced this generation. Fire-and-forget — the meta will
-        // be re-written on the result event with the real numbers.
         void data.updateGenerationMeta(genId, { session_id: ev.sessionId });
+        log("init", { sessionId: ev.sessionId });
       }
-      if (ev.kind === "text") allText.push(ev.text);
+      if (ev.kind === "text") {
+        allText.push(ev.text);
+        textChunks++;
+      }
+      if (ev.kind === "tool_use") {
+        toolUseCount++;
+        log("tool_use", { tool: ev.tool });
+      }
+      if (ev.kind === "error") {
+        log("driver-error", { message: ev.message });
+      }
       if (ev.kind === "result") {
         finalText = ev.text;
         costUsd = ev.costUsd;
         numTurns = ev.numTurns;
         durationMs = ev.durationMs;
         success = ev.success;
+        log("result", { success, cost: costUsd, turns: numTurns, durationMs, textLength: ev.text.length });
       }
     }
   } catch (e) {
+    log("event-loop-crashed", { error: e instanceof Error ? e.message : String(e) });
     await data.setGenerationStatus(genId, "failed-validation");
     await data.appendDecision({
       gen: genId,
@@ -49,10 +87,13 @@ export async function startTier3Generation(
     });
     return;
   }
+  log("event-loop-finished", { textChunks, toolUseCount, finalTextLength: finalText.length });
 
   const fullText = finalText || allText.join("");
+  await fs.writeFile(path.join(dir, "transcript.md"), fullText, "utf8");
   const json = extractLottieJson(fullText);
   if (!json) {
+    log("no-lottie-tag", { transcriptLength: fullText.length, sampleStart: fullText.slice(0, 200), sampleEnd: fullText.slice(-200) });
     await data.updateGenerationMeta(genId, {
       cost_usd: costUsd,
       num_turns: numTurns,
@@ -60,16 +101,12 @@ export async function startTier3Generation(
     });
     await data.setGenerationStatus(genId, "failed-validation");
     await data.appendDecision({ gen: genId, action: "failed", reason: "No <lottie-json> tag found" });
-    // Stash the raw transcript for debugging
-    const dir = path.join((await data.getGeneration(genId)).dir);
-    await fs.writeFile(path.join(dir, "transcript.md"), fullText, "utf8");
     return;
   }
 
   const v1 = validator.validate(json);
   await data.writeGenerationVersion(genId, 1, json);
-  const dir = path.join((await data.getGeneration(genId)).dir);
-  await fs.writeFile(path.join(dir, "transcript.md"), fullText, "utf8");
+  log("v1-validated", { valid: v1.valid, errorCount: v1.errors.length });
 
   const versions: { v: number; validated: boolean; errors_count: number }[] = [
     { v: 1, validated: v1.valid, errors_count: v1.errors.length },
@@ -134,6 +171,7 @@ export async function startTier3Generation(
     errors: finalValidation.errors.length,
     version: finalVersion,
   });
+  log("done", { finalVersion, valid: finalValidation.valid, totalCost, totalDuration });
   void success;
 }
 

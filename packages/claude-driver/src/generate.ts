@@ -1,4 +1,7 @@
 import type { ChildProcess } from "node:child_process";
+import os from "node:os";
+import path from "node:path";
+import { mkdtempSync } from "node:fs";
 import { PATHS } from "@open-lottie/lottie-tools";
 import { spawnClaude } from "./spawn.ts";
 import { parseStream } from "./stream-parse.ts";
@@ -39,7 +42,11 @@ const DISALLOWED_TOOLS = "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch,Todo
 export function generate(opts: GenerateOptions): GenerateHandle {
   const model = opts.model ?? DEFAULT_MODEL;
   const systemPromptPath = opts.systemPromptPath ?? PATHS.systemPromptDefault;
-  const cwd = opts.cwd ?? PATHS.root;
+  // Run claude in an empty tmp dir so the model doesn't see the project's
+  // CLAUDE.md / docs/ / package.json. Combined with --disallowed-tools this
+  // keeps the model focused on emitting Lottie JSON instead of "let me check
+  // the existing templates to understand the format..." text.
+  const cwd = opts.cwd ?? mkdtempSync(path.join(os.tmpdir(), "claude-lottie-"));
 
   const args = [
     "--print",
