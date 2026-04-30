@@ -152,7 +152,8 @@ export function LibraryGrid({ entries, animations, initialQuery = "", initialTag
       ) : (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
           {filtered.map((i) => {
-            const entry = entries[i]!;
+            const entry = entries[i];
+            if (!entry) return null;
             return (
               <Link
                 key={entry.id}
