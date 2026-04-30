@@ -2,7 +2,7 @@
 
 A local-first Next.js admin for browsing, generating, remixing, and exporting Lottie animations — orchestrated by the Claude CLI with a human in the loop on every change.
 
-> **Status: M0 — research & planning complete. Brainstorm next, then M1 (MVP) build.** No application code yet; see `docs/` for the full design log.
+> **Status: M1 — admin runs locally.** All M0 docs are still authoritative; see `docs/` for design, `docs/decisions/ADR-008-m1-defaults.md` for the defaults committed without the user brainstorm.
 
 ## Why
 
@@ -79,19 +79,25 @@ open-lottie-ui/
 4. [`docs/brainstorm.md`](docs/brainstorm.md) — questions for the next session.
 5. [`docs/wireframes.md`](docs/wireframes.md) — ASCII screen sketches.
 
-## How it'll feel (target)
+## Run it locally
+
+Requires Node ≥ 20 and `pnpm` (auto-activated via corepack on Node 22+).
+Optional: `claude` CLI (for Tier-3 prompted generation), `ffmpeg`.
 
 ```
+$ corepack enable && corepack prepare pnpm@9.15.0 --activate
 $ pnpm install
 $ pnpm dev
-   open-lottie-ui  •  http://localhost:3000  •  ✓ claude  ✓ ffmpeg  ✗ glaxnimate
+   open-lottie-ui  •  http://127.0.0.1:3000
 
 # In the browser:
-#  /library  → 1 seed animation (loader-pulse)
-#  /generate → "pulsing teal loader, 60 frames"
-#  /review/:id → side-by-side, scrub, press 'a' to approve
-#  /library  → 2 animations now; export the new one as .lottie
+#  /library  → 3 seed animations (loader-pulse, checkmark-success, spinner-arc)
+#  /generate → Tier 1 (template + params, deterministic) or Tier 3 (Claude prompt)
+#  /review/:id → side-by-side base/generation, validation panel, press 'a' to approve / 'r' to reject
+#  /library  → new animation appears; export as .lottie or .json
 ```
+
+Probe host capabilities anytime: `pnpm detect-tools`.
 
 ## License
 
