@@ -1,5 +1,9 @@
 import type { NextConfig } from "next";
-import type { Configuration as WebpackConfig } from "webpack";
+
+// Avoid pulling `webpack` types into the main app type-graph. Next types the
+// `webpack` callback with its own internal type, but we don't need that
+// strictness here — the function body only mutates `externals`.
+type WebpackConfigShape = { externals?: unknown };
 
 // Optional native deps from `sharp` (pulled in via @dotlottie/dotlottie-js → sharp-phash).
 // We don't need them — the app only ships `sharp` to satisfy the import graph and never
@@ -23,10 +27,10 @@ const config: NextConfig = {
     "sharp",
     "sharp-phash",
   ],
-  webpack: (cfg: WebpackConfig) => {
-    cfg.externals = cfg.externals || [];
-    if (Array.isArray(cfg.externals)) {
-      cfg.externals.push(...SHARP_OPTIONAL.map((m) => ({ [m]: `commonjs ${m}` })));
+  webpack: (cfg: WebpackConfigShape) => {
+    const externals = (cfg.externals = (cfg.externals as unknown[]) || []);
+    if (Array.isArray(externals)) {
+      externals.push(...SHARP_OPTIONAL.map((m) => ({ [m]: `commonjs ${m}` })));
     }
     return cfg;
   },
