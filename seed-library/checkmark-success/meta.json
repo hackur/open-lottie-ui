@@ -1,21 +1,16 @@
 {
-  "id": "loader-pulse",
-  "title": "Loader Pulse",
-  "tags": [
-    "loader",
-    "pulse",
-    "ui",
-    "seed"
-  ],
+  "id": "checkmark-success",
+  "title": "Checkmark Success",
+  "tags": ["checkmark", "success", "confirm", "ui", "seed"],
   "source": "seed",
   "source_url": null,
   "license_id": "CC0-1.0",
   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
   "attribution_required": false,
   "attribution_text": null,
-  "imported_at": "2026-04-27T00:00:00Z",
+  "imported_at": "2026-04-29T00:00:00Z",
   "imported_by": "open-lottie-ui",
-  "content_hash": "sha256:44d9c08af38466c0ecf124655495cd8667150ccc6c7f38ab34509b5e7a455dcc",
+  "content_hash": "sha256:6ea089c5ed47d599904b67cffb8d657287dbe5646e0852efffdbcbcb2e4f466b",
   "intrinsic": {
     "fr": 30,
     "ip": 0,
@@ -23,7 +18,7 @@
     "w": 200,
     "h": 200,
     "layer_count": 1,
-    "size_bytes": 1036
+    "size_bytes": 1314
   },
   "from_generation": null
 }

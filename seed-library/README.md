@@ -7,6 +7,8 @@ A handful of small CC0 / MIT-licensed Lottie files shipped with the repo so the 
 | id | License | Origin | Notes |
 |----|---------|--------|-------|
 | `loader-pulse` | CC0-1.0 | Hand-rolled by us | A pulsing circle. Validates against lottie-spec; renders identically in lottie-web and dotlottie-web. |
+| `checkmark-success` | CC0-1.0 | Hand-rolled by us | A green checkmark that draws on via Trim Paths over 45 frames, then a small scale bounce. |
+| `spinner-arc` | CC0-1.0 | Hand-rolled by us | A teal 3/4-circle arc rotating 360° over 60 frames; seamlessly loopable. |
 
 ## Adding a new seed
 
