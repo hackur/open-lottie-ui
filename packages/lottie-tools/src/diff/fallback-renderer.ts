@@ -218,9 +218,18 @@ function fillRect(
 }
 
 /**
+ * Shape `ty` strings that the fallback renderer either consumes directly or
+ * deliberately ignores without that being a "skip" (transform groups, fill
+ * fields, etc.). Anything not in this set ends up in `unsupported`.
+ */
+const KNOWN_SHAPE_TYPES = new Set(["fl", "el", "rc", "gr", "tr"]);
+
+/**
  * Walk a `shapes` group, find an `el` or `rc` paired with an `fl`, and paint
  * it through `painter`. Doesn't recurse beyond one nesting level (templates
  * we ship don't nest groups deeper).
+ *
+ * Records any shape `ty` we don't know how to draw into `unsupported`.
  */
 function paintShapes(
   shapes: LottieShape[] | undefined,
@@ -231,6 +240,7 @@ function paintShapes(
   pixels: Buffer,
   width: number,
   height: number,
+  unsupported: Set<string>,
 ): void {
   if (!shapes) return;
   // Find the fill (color) first.
@@ -242,11 +252,13 @@ function paintShapes(
       fillOpacity = clamp01(toScalar(sample(s.o, t, [100]), 100) / 100);
     }
   }
-  if (!color) return;
-  color = { ...color, a: Math.round(color.a * fillOpacity * layerOpacity) };
+  if (color) {
+    color = { ...color, a: Math.round(color.a * fillOpacity * layerOpacity) };
+  }
 
   for (const s of shapes) {
     if (s.ty === "el") {
+      if (!color) continue;
       const p = sample(s.p, t, [0, 0]);
       const sz = sample(s.s, t, [40, 40]);
       const cx = layerCenter.x + p[0] * layerScale.x;
@@ -255,6 +267,7 @@ function paintShapes(
       const ry = (sz[1] / 2) * layerScale.y;
       fillEllipse(pixels, width, height, cx, cy, rx, ry, color);
     } else if (s.ty === "rc") {
+      if (!color) continue;
       const p = sample(s.p, t, [0, 0]);
       const sz = sample(s.s, t, [40, 40]);
       const cx = layerCenter.x + p[0] * layerScale.x;
@@ -270,9 +283,34 @@ function paintShapes(
         color,
       );
     } else if (s.ty === "gr" && s.it) {
-      paintShapes(s.it, t, layerCenter, layerScale, layerOpacity, pixels, width, height);
+      paintShapes(
+        s.it,
+        t,
+        layerCenter,
+        layerScale,
+        layerOpacity,
+        pixels,
+        width,
+        height,
+        unsupported,
+      );
+    } else if (typeof s.ty === "string" && !KNOWN_SHAPE_TYPES.has(s.ty)) {
+      unsupported.add(s.ty);
     }
   }
+}
+
+/**
+ * Diagnostic record returned by {@link renderFrameFallbackEx}. `unsupported`
+ * lists the `ty` strings of shapes the renderer skipped — useful for surfacing
+ * "this animation contains paths/gradients/etc that won't be exported"
+ * warnings to the user.
+ */
+export interface FallbackRenderInfo {
+  /** PNG bytes (RGBA). */
+  png: Buffer;
+  /** Shape `ty` strings encountered but not rasterised, deduped. */
+  unsupported: string[];
 }
 
 /**
@@ -285,15 +323,44 @@ export function renderFrameFallback(
   width: number,
   height: number,
 ): Buffer {
+  return renderFrameFallbackEx(animation, frame, width, height, {}).png;
+}
+
+/**
+ * Diagnostic-aware variant of {@link renderFrameFallback}. Allows the caller
+ * to opt in to a transparent background (e.g. for alpha-capable video export)
+ * and recovers the list of shape types we silently skipped.
+ *
+ * The "skip" set is best-effort — we only record top-level shapes in `it`/
+ * `shapes`; group children that are themselves unsupported are reported.
+ */
+export function renderFrameFallbackEx(
+  animation: unknown,
+  frame: number,
+  width: number,
+  height: number,
+  opts: { transparent?: boolean } = {},
+): FallbackRenderInfo {
   const png = new PNG({ width, height });
-  // Initialise to opaque white so simple shapes stand out for pixelmatch.
-  for (let i = 0; i < png.data.length; i += 4) {
-    png.data[i + 0] = 255;
-    png.data[i + 1] = 255;
-    png.data[i + 2] = 255;
-    png.data[i + 3] = 255;
+  if (opts.transparent) {
+    // Already zero-filled by pngjs (`new Buffer.alloc`). Explicit for clarity.
+    for (let i = 0; i < png.data.length; i += 4) {
+      png.data[i + 0] = 0;
+      png.data[i + 1] = 0;
+      png.data[i + 2] = 0;
+      png.data[i + 3] = 0;
+    }
+  } else {
+    // Initialise to opaque white so simple shapes stand out for pixelmatch.
+    for (let i = 0; i < png.data.length; i += 4) {
+      png.data[i + 0] = 255;
+      png.data[i + 1] = 255;
+      png.data[i + 2] = 255;
+      png.data[i + 3] = 255;
+    }
   }
   const pixels = png.data;
+  const unsupported = new Set<string>();
 
   const a = (animation ?? {}) as LottieAnimation;
   const srcW = typeof a.w === "number" && a.w > 0 ? a.w : width;
@@ -325,8 +392,18 @@ export function renderFrameFallback(
     };
     const layerOpacity = clamp01(op100 / 100);
 
-    paintShapes(layer.shapes, frame, center, lscale, layerOpacity, pixels, width, height);
+    paintShapes(
+      layer.shapes,
+      frame,
+      center,
+      lscale,
+      layerOpacity,
+      pixels,
+      width,
+      height,
+      unsupported,
+    );
   }
 
-  return PNG.sync.write(png);
+  return { png: PNG.sync.write(png), unsupported: Array.from(unsupported) };
 }

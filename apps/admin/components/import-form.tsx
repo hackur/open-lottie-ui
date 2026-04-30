@@ -6,14 +6,16 @@ import { clsx } from "clsx";
 import { ImportSvg } from "@/components/import-svg";
 import { ImportUrl } from "@/components/import-url";
 import { ImportUrlPaste } from "@/components/import-url-paste";
+import { ImportVideo } from "@/components/import-video";
 
-type Tab = "svg-file" | "svg-paste" | "url-paste" | "url-scan";
+type Tab = "svg-file" | "svg-paste" | "url-paste" | "url-scan" | "video";
 
 const TABS: ReadonlyArray<{ id: Tab; label: string; sub: string }> = [
   { id: "svg-file", label: "SVG file", sub: "Drop or pick an .svg" },
   { id: "svg-paste", label: "Paste SVG", sub: "Paste raw markup" },
   { id: "url-paste", label: "From URL", sub: "Paste a Lottie URL" },
   { id: "url-scan", label: "Page scan", sub: "Crawl a webpage" },
+  { id: "video", label: "From video / GIF", sub: "ffmpeg → embedded frames" },
 ];
 
 /**
@@ -50,6 +52,7 @@ export function ImportForm() {
       {(tab === "svg-file" || tab === "svg-paste") && <ImportSvg />}
       {tab === "url-paste" && <ImportUrlPaste />}
       {tab === "url-scan" && <ImportUrl />}
+      {tab === "video" && <ImportVideo />}
     </div>
   );
 }

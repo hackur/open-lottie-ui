@@ -37,6 +37,11 @@ export {
   renderFrames,
   frameKey,
 } from "./render-frames.ts";
+export {
+  renderFrameFallback,
+  renderFrameFallbackEx,
+} from "./fallback-renderer.ts";
+export type { FallbackRenderInfo } from "./fallback-renderer.ts";
 export { RendererUnavailableError } from "./types.ts";
 export type { DiffOptions, DiffResult, FrameDiff } from "./types.ts";
 
