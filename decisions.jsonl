@@ -100,3 +100,18 @@
 {"ts":"2026-04-30T04:29:58.671Z","gen":"2026-04-30_1427a4","action":"validated","ok":true,"errors":0}
 {"ts":"2026-04-30T04:29:59.014Z","gen":"2026-04-30_ea62df","action":"created","tier":1,"plugin":"video-import","filename":"testsrc.gif","bytes_in":33530,"bytes_out":59716,"frame_count":10}
 {"ts":"2026-04-30T04:29:59.018Z","gen":"2026-04-30_ea62df","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T04:41:49.588Z","gen":"loader-pulse","action":"meta_updated","library_id":"loader-pulse","by":"local-user","fields":["tags"],"changes":{"tags":{"from":["loader","pulse","ui","seed"],"to":["loader","spinner","new-tag"]}}}
+{"ts":"2026-04-30T04:41:55.568Z","gen":"loader-pulse","action":"meta_updated","library_id":"loader-pulse","by":"local-user","fields":["tags"],"changes":{"tags":{"from":["loader","spinner","new-tag"],"to":["loader","pulse","ui","seed"]}}}
+{"ts":"2026-04-30T04:42:00.235Z","gen":"loader-pulse","action":"meta_updated","library_id":"loader-pulse","by":"local-user","fields":["tags"],"changes":{"tags":{"from":["loader","pulse","ui","seed"],"to":["xxx"]}}}
+{"ts":"2026-04-30T04:42:04.533Z","gen":"loader-pulse","action":"meta_updated","library_id":"loader-pulse","by":"local-user","fields":["tags"],"changes":{"tags":{"from":["xxx"],"to":["loader","pulse","ui","seed"]}}}
+{"ts":"2026-04-30T04:42:08.769Z","gen":"loader-pulse-fork-f80aa17b","action":"library_forked","library_id":"loader-pulse-fork-f80aa17b","forked_from":"loader-pulse","by":"local-user"}
+{"ts":"2026-04-30T04:42:20.403Z","gen":"loader-pulse-fork-f80aa17b","action":"deleted_library","library_id":"loader-pulse-fork-f80aa17b","by":"local-user"}
+{"ts":"2026-04-30T04:43:33.152Z","gen":"2026-04-30_a06402","action":"created","tier":1,"plugin":"python-lottie:svg","filename":"imported.svg","bytes_in":116}
+{"ts":"2026-04-30T04:43:33.157Z","gen":"2026-04-30_a06402","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T06:25:53.467Z","gen":"2026-04-30_667ca1","action":"reject","by":"local-user","codes":[],"note":"in the lower corner weird rendering"}
+{"ts":"2026-04-30T06:26:06.664Z","gen":"2026-04-30_61d2d0","action":"approve","by":"local-user"}
+{"ts":"2026-04-30T06:26:06.669Z","gen":"2026-04-30_61d2d0","action":"committed","library_id":"2026-04-30_heartbeat-render_61d2d0"}
+{"ts":"2026-04-30T06:27:06.220Z","gen":"2026-04-30_b0fa64","action":"reject","by":"local-user","codes":[],"note":"weirdly not moving like the original and stuck centered in the upper left corner of the square video."}
+{"ts":"2026-04-30T06:27:10.874Z","gen":"2026-04-30_0cd671","action":"approve","by":"local-user"}
+{"ts":"2026-04-30T06:27:10.882Z","gen":"2026-04-30_0cd671","action":"committed","library_id":"2026-04-30_rotate-spin-render_0cd671"}
+{"ts":"2026-04-30T06:28:21.056Z","gen":"2026-04-30_8632ae","action":"failed","reason":"No <lottie-json> tag found"}
