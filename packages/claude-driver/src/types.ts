@@ -24,6 +24,22 @@ export type GenerateOptions = {
   cwd?: string;
   /** Optional abort signal; aborting kills the child with SIGTERM. */
   signal?: AbortSignal;
+  /**
+   * Silence watchdog. If no driver event arrives for this many ms, the
+   * driver emits an `error` event and kills the child. Set to `0` to
+   * disable. Default: 60_000.
+   */
+  silenceTimeoutMs?: number;
+};
+
+/**
+ * Options for {@link GenerateHandle.kill}. When `graceful: true` the driver
+ * sends SIGTERM, waits up to `timeoutMs` for the child to exit, then sends
+ * SIGKILL. Returns a promise that resolves when the child has exited.
+ */
+export type KillOptions = {
+  graceful?: boolean;
+  timeoutMs?: number;
 };
 
 /**
