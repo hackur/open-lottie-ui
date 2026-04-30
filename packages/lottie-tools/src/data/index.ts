@@ -31,4 +31,12 @@ export { appendDecision, tailDecisions } from "./decisions.ts";
 
 export { promoteGenerationToLibrary } from "./promote.ts";
 
+export {
+  writeFileAtomic,
+  writeJsonAtomic,
+  appendJsonl,
+  readJson,
+  pathExists,
+} from "./atomic.ts";
+
 export type * from "./types.ts";

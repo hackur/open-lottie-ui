@@ -61,3 +61,12 @@ export function listPlugins(surface?: PluginSurface): PluginManifest[] {
 export function getPlugin(id: string): PluginManifest | null {
   return REGISTRY.find((p) => p.id === id) ?? null;
 }
+
+// Read-only manifest registry (M1; loader lives in M2 per ADR-007).
+export {
+  listPluginManifests,
+  listPluginsWithStatus,
+  type PluginManifestFile,
+  type PluginManifestWithStatus,
+  type PluginStatus,
+} from "./manifests.ts";
