@@ -1,7 +1,12 @@
 import { PATHS, plugins } from "@open-lottie/lottie-tools";
 import { detectTools } from "@/lib/detect-tools";
 import { loadSettings } from "@/lib/settings";
+import { FLAG_CATALOG, type FeatureFlag } from "@/lib/feature-flags";
 import { SettingsForm } from "@/components/settings-form";
+import {
+  FeatureFlagsForm,
+  type FeatureFlagItem,
+} from "@/components/feature-flags-form";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -18,12 +23,37 @@ const STATUS_CLASS: Record<plugins.PluginStatus, string> = {
   "m1-stub-needs-tool": "text-[var(--color-warn,var(--color-fg-muted))]",
 };
 
+/**
+ * Maps each feature flag to the host tool whose presence is required for it
+ * to function. `null` means the flag has no host-tool dependency (e.g.
+ * URL-scrape is purely network-based).
+ */
+const FLAG_TOOL_MAP: Record<FeatureFlag, string | null> = {
+  enable_inlottie: "inlottie",
+  enable_glaxnimate: "glaxnimate",
+  enable_python_lottie: "python3",
+  enable_ffmpeg: "ffmpeg",
+  enable_url_scrape: null,
+};
+
 export default async function SettingsPage() {
   const settings = await loadSettings();
   const tools = await detectTools();
   const enabledPlugins = plugins.listPlugins();
   const toolStatusMap = Object.fromEntries(tools.map((t) => [t.name, t.found]));
   const allPlugins = await plugins.listPluginsWithStatus(toolStatusMap);
+
+  const flagItems: FeatureFlagItem[] = FLAG_CATALOG.map((info) => {
+    const toolName = FLAG_TOOL_MAP[info.flag];
+    return {
+      flag: info.flag,
+      title: info.title,
+      description: info.description,
+      enabled: Boolean(settings[info.flag]),
+      hostTool: toolName ?? undefined,
+      hostToolFound: toolName ? toolStatusMap[toolName] === true : undefined,
+    };
+  });
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -41,6 +71,14 @@ export default async function SettingsPage() {
 
       <Section title="Defaults">
         <SettingsForm initial={settings} />
+      </Section>
+
+      <Section title="Features">
+        <p className="mb-2 text-xs text-[var(--color-fg-muted)]">
+          External-tool integrations. All default off — opt in to extend the
+          baseline UI with renderers, editors, and import sources.
+        </p>
+        <FeatureFlagsForm items={flagItems} />
       </Section>
 
       <Section title="Host capabilities">

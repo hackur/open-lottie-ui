@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { data, hash, PATHS, validator } from "@open-lottie/lottie-tools";
 
 import { fetchAndExtract, scanCandidates } from "@/lib/asset-scraper";
+import { requireFlag } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +59,9 @@ function deriveTitleFromUrl(url: string): string {
  * writes a fresh `library/import_<YYYY-MM-DD>_<slug>_<short-hash>/` entry.
  */
 export async function POST(req: Request): Promise<Response> {
+  const blocked = await requireFlag("enable_url_scrape");
+  if (blocked) return blocked;
+
   let body: {
     asset_url?: unknown;
     page_url?: unknown;

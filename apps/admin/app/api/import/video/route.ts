@@ -6,6 +6,7 @@ import {
   convertVideoToLottie,
   VideoImportError,
 } from "@/lib/video-import";
+import { requireFlag } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,6 +27,9 @@ const MAX_INPUT_BYTES = 50 * 1024 * 1024;
  * Returns `{ id, frame_count, bytes_in, bytes_out, warnings }`.
  */
 export async function POST(req: Request): Promise<Response> {
+  const blocked = await requireFlag("enable_ffmpeg");
+  if (blocked) return blocked;
+
   const ct = req.headers.get("content-type") || "";
   const url = new URL(req.url);
   const fps = parseOptionalInt(url.searchParams.get("fps"));

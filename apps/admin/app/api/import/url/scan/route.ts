@@ -5,6 +5,7 @@ import {
   scanCandidates,
   type ScannedAsset,
 } from "@/lib/asset-scraper";
+import { requireFlag } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +25,9 @@ const PREVIEW_INLINE_MAX_BYTES = 100 * 1024;
  * sane — the client can re-fetch on demand if it really needs the JSON.
  */
 export async function POST(req: Request): Promise<Response> {
+  const blocked = await requireFlag("enable_url_scrape");
+  if (blocked) return blocked;
+
   let body: { url?: unknown };
   try {
     body = await req.json();

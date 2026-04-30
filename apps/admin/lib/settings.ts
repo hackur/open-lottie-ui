@@ -10,6 +10,16 @@ export type AppSettings = {
   max_repair_attempts: number;
   concurrent_generations: number;
   theme: "system" | "dark" | "light";
+  /**
+   * Feature flags for external tools. All default OFF — the M1 baseline is
+   * the web UI + Tier-1 templates + Tier-3 Claude. Each flag, when off,
+   * hides its UI and gates its API to 503. Toggle from /settings.
+   */
+  enable_inlottie: boolean;
+  enable_glaxnimate: boolean;
+  enable_python_lottie: boolean;
+  enable_ffmpeg: boolean;
+  enable_url_scrape: boolean;
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -20,6 +30,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
   max_repair_attempts: 1,
   concurrent_generations: 3,
   theme: "system",
+  // External-tool flags default OFF.
+  enable_inlottie: false,
+  enable_glaxnimate: false,
+  enable_python_lottie: false,
+  enable_ffmpeg: false,
+  enable_url_scrape: false,
 };
 
 const ALLOWED_KEYS = new Set<keyof AppSettings>([
@@ -30,6 +46,11 @@ const ALLOWED_KEYS = new Set<keyof AppSettings>([
   "max_repair_attempts",
   "concurrent_generations",
   "theme",
+  "enable_inlottie",
+  "enable_glaxnimate",
+  "enable_python_lottie",
+  "enable_ffmpeg",
+  "enable_url_scrape",
 ]);
 
 const ALLOWED_MODELS = new Set([
@@ -150,6 +171,16 @@ export function validatePatch(input: unknown): Partial<AppSettings> {
           );
         }
         out.theme = value;
+        break;
+      case "enable_inlottie":
+      case "enable_glaxnimate":
+      case "enable_python_lottie":
+      case "enable_ffmpeg":
+      case "enable_url_scrape":
+        if (typeof value !== "boolean") {
+          throw new SettingsValidationError(`${key} must be a boolean`);
+        }
+        (out as Record<string, unknown>)[key] = value;
         break;
     }
   }

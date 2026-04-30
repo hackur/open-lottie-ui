@@ -6,6 +6,7 @@ import {
   convertSvgToLottie,
   PythonLottieError,
 } from "@/lib/python-lottie";
+import { requireFlag } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,6 +22,9 @@ export const dynamic = "force-dynamic";
  * Lottie, and creates a Tier-1 generation pending review.
  */
 export async function POST(req: Request): Promise<Response> {
+  const blocked = await requireFlag("enable_python_lottie");
+  if (blocked) return blocked;
+
   const ct = req.headers.get("content-type") || "";
 
   let svgBuffer: Buffer | null = null;

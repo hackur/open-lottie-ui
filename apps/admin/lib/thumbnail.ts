@@ -15,6 +15,7 @@ import path from "node:path";
 
 import { PATHS } from "@open-lottie/lottie-tools";
 import { resolveTool } from "@/lib/detect-tools";
+import { isEnabled } from "@/lib/feature-flags";
 
 const RENDER_TIMEOUT_MS = 2_500;
 const DEFAULT_WIDTH = 256;

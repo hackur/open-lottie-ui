@@ -16,8 +16,8 @@ export default async function RootLayout({
 }) {
   await ensureFirstRun();
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" suppressHydrationWarning>
+      <body suppressHydrationWarning>
         <div className="grid min-h-screen grid-cols-[14rem_1fr]">
           <Sidebar />
           <main className="flex flex-col">
