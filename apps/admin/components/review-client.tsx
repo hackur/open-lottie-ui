@@ -32,7 +32,13 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
   const [rejectCodes, setRejectCodes] = useState<string[]>([]);
   const [rejectNote, setRejectNote] = useState("");
   const [showReject, setShowReject] = useState(false);
+  const [showDelete, setShowDelete] = useState(false);
   const [frame, setFrame] = useState(0);
+
+  const isDeletable =
+    meta.status === "rejected" ||
+    meta.status === "failed-validation" ||
+    meta.status === "cancelled";
 
   useEffect(() => {
     if (meta.status !== "running") return;
@@ -90,6 +96,12 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
     }
   }
 
+  function editAndRetry() {
+    const params = new URLSearchParams({ retry: meta.id });
+    if (meta.base_id) params.set("remix", meta.base_id);
+    router.push(`/generate?${params.toString()}`);
+  }
+
   async function reject() {
     setBusy(true);
     setError(null);
@@ -102,6 +114,42 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
       const json = (await res.json()) as { ok?: boolean; error?: string };
       if (!res.ok || !json.ok) throw new Error(json.error || "Reject failed");
       router.push("/review");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+      setBusy(false);
+    }
+  }
+
+  async function cancel() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/generate/${encodeURIComponent(meta.id)}/cancel`, {
+        method: "POST",
+      });
+      const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || !json.ok) throw new Error(json.error || "Cancel failed");
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteGen() {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/generate/${encodeURIComponent(meta.id)}`, {
+        method: "DELETE",
+      });
+      const json = (await res
+        .json()
+        .catch(() => ({}))) as { ok?: boolean; error?: string };
+      if (!res.ok || !json.ok) throw new Error(json.error || "Delete failed");
+      router.push("/review");
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setBusy(false);
@@ -125,8 +173,24 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
           </div>
         </div>
         <div className="flex gap-2">
+          {meta.status === "running" && (
+            <button
+              onClick={cancel}
+              disabled={busy}
+              className="rounded-md border border-[var(--color-warning)] px-4 py-2 text-sm text-[var(--color-warning)]"
+            >
+              Cancel
+            </button>
+          )}
           {meta.status === "pending-review" && (
             <>
+              <button
+                onClick={editAndRetry}
+                disabled={busy}
+                className="rounded-md border border-[var(--color-border)] px-4 py-2 text-sm text-[var(--color-fg-muted)] hover:border-[var(--color-accent)] hover:text-[var(--color-fg)]"
+              >
+                Edit and retry
+              </button>
               <button
                 onClick={() => setShowReject(true)}
                 disabled={busy}
@@ -142,6 +206,24 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
                 Approve <kbd className="ml-2">a</kbd>
               </button>
             </>
+          )}
+          {(meta.status === "rejected" || meta.status === "failed-validation") && (
+            <button
+              onClick={editAndRetry}
+              disabled={busy}
+              className="rounded-md bg-[var(--color-accent)] px-4 py-2 text-sm font-medium text-[var(--color-accent-fg)]"
+            >
+              Edit and retry
+            </button>
+          )}
+          {isDeletable && (
+            <button
+              onClick={() => setShowDelete(true)}
+              disabled={busy}
+              className="rounded-md border border-[var(--color-danger)] px-4 py-2 text-sm text-[var(--color-danger)] hover:bg-[var(--color-danger)] hover:text-[var(--color-bg)]"
+            >
+              Delete
+            </button>
           )}
         </div>
       </div>
@@ -249,6 +331,38 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
               {transcript}
             </pre>
           )}
+        </div>
+      )}
+
+      {showDelete && isDeletable && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(0,0,0,0.6)]">
+          <div className="w-full max-w-md rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-5">
+            <div className="mb-2 text-sm font-medium">Delete generation?</div>
+            <div className="mb-4 text-xs text-[var(--color-fg-muted)]">
+              This removes <code className="font-mono">generations/{meta.id}/</code>{" "}
+              from disk including the Claude transcript and all versions. The
+              decisions log keeps a permanent record of the deletion. This
+              cannot be undone.
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowDelete(false)}
+                disabled={busy}
+                className="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={deleteGen}
+                disabled={busy}
+                className="rounded-md bg-[var(--color-danger)] px-3 py-1.5 text-sm font-medium text-[var(--color-bg)]"
+              >
+                {busy ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

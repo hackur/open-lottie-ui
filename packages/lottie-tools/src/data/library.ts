@@ -104,3 +104,23 @@ export async function saveLibraryMeta(
 ): Promise<void> {
   await writeJsonAtomic(metaPath(id), meta);
 }
+
+/**
+ * Recursively delete a library entry directory. Throws if the entry does not
+ * exist (caller can probe via {@link libraryEntryExists} first if it wants a
+ * graceful 404).
+ *
+ * Note: this physically removes `library/<id>/`. It does NOT touch
+ * `seed-library/`; seed entries are restored on next first-run boot regardless.
+ * Higher-level callers should decide whether to block deletion of seed-sourced
+ * entries before calling this helper.
+ */
+export async function deleteLibraryEntry(id: string): Promise<void> {
+  const dir = entryDir(id);
+  if (!(await pathExists(dir))) {
+    throw Object.assign(new Error(`Library entry not found: ${id}`), {
+      code: "ENOENT",
+    });
+  }
+  await fs.rm(dir, { recursive: true, force: false });
+}

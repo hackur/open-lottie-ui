@@ -1,7 +1,13 @@
 {
   "id": "checkmark-success",
   "title": "Checkmark Success",
-  "tags": ["checkmark", "success", "confirm", "ui", "seed"],
+  "tags": [
+    "checkmark",
+    "success",
+    "confirm",
+    "ui",
+    "seed"
+  ],
   "source": "seed",
   "source_url": null,
   "license_id": "CC0-1.0",

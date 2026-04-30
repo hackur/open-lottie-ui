@@ -267,3 +267,20 @@ export async function listGenerations(
   });
   return entries;
 }
+
+/**
+ * Recursively delete a generation directory. Throws if it does not exist.
+ *
+ * Higher-level callers should prevent deletion of `running` generations (cancel
+ * them first) — this helper is intentionally dumb so it stays usable from
+ * scripts and tests.
+ */
+export async function deleteGeneration(id: string): Promise<void> {
+  const dir = entryDir(id);
+  if (!(await pathExists(dir))) {
+    throw Object.assign(new Error(`Generation not found: ${id}`), {
+      code: "ENOENT",
+    });
+  }
+  await fs.rm(dir, { recursive: true, force: false });
+}

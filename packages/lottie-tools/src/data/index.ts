@@ -13,6 +13,7 @@ export {
   getLibraryAnimation,
   saveLibraryMeta,
   libraryEntryExists,
+  deleteLibraryEntry,
 } from "./library.ts";
 
 export {
@@ -23,6 +24,7 @@ export {
   writeGenerationVersion,
   setGenerationStatus,
   getGenerationFinalAnimation,
+  deleteGeneration,
 } from "./generations.ts";
 
 export { appendDecision, tailDecisions } from "./decisions.ts";

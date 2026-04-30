@@ -24,16 +24,32 @@ type Props = {
   templates: TemplateMeta[];
   initialPrompt: string;
   initialTemplateId: string | null;
+  initialParams?: Record<string, unknown> | null;
+  initialTier?: 1 | 3;
   remixBase: string | null;
 };
 
-export function GenerateForm({ starters, templates, initialPrompt, initialTemplateId, remixBase }: Props) {
-  const [tier, setTier] = useState<1 | 3>(initialTemplateId ? 1 : 3);
+export function GenerateForm({
+  starters,
+  templates,
+  initialPrompt,
+  initialTemplateId,
+  initialParams,
+  initialTier,
+  remixBase,
+}: Props) {
+  const [tier, setTier] = useState<1 | 3>(initialTier ?? (initialTemplateId ? 1 : 3));
   const [prompt, setPrompt] = useState(initialPrompt);
   const [templateId, setTemplateId] = useState<string | null>(
     initialTemplateId ?? templates[0]?.id ?? null,
   );
-  const [paramsByTemplate, setParamsByTemplate] = useState<Record<string, Record<string, unknown>>>({});
+  const [paramsByTemplate, setParamsByTemplate] = useState<Record<string, Record<string, unknown>>>(() => {
+    if (initialTemplateId && initialParams) {
+      return { [initialTemplateId]: { ...initialParams } };
+    }
+    return {};
+  });
+  const [model, setModel] = useState<string>("claude-opus-4-7");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -69,14 +85,25 @@ export function GenerateForm({ starters, templates, initialPrompt, initialTempla
       const body =
         tier === 1
           ? { tier: 1, template_id: templateId, params, prompt_summary: prompt || templateId, base_id: remixBase }
-          : { tier: 3, prompt, base_id: remixBase };
+          : { tier: 3, prompt, model, base_id: remixBase };
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      const json = (await res.json()) as { id?: string; error?: string };
-      if (!res.ok || !json.id) throw new Error(json.error ?? "Generation failed");
+      const text = await res.text();
+      let json: { id?: string; error?: string; details?: unknown } = {};
+      try {
+        json = JSON.parse(text);
+      } catch {
+        // Non-JSON response — usually a 404 during dev-server reload or a
+        // server crash. Surface the raw body so the user can see what happened.
+        throw new Error(`Server returned ${res.status} (${res.statusText || "non-JSON"}): ${text.slice(0, 200)}`);
+      }
+      if (!res.ok || !json.id) {
+        const detail = json.details ? ` — ${JSON.stringify(json.details).slice(0, 200)}` : "";
+        throw new Error((json.error ?? "Generation failed") + detail);
+      }
       router.push(`/review/${encodeURIComponent(json.id)}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -163,9 +190,22 @@ export function GenerateForm({ starters, templates, initialPrompt, initialTempla
             rows={6}
             className="w-full"
           />
-          <p className="text-xs text-[var(--color-fg-muted)]">
-            Calls Claude CLI. Output should be Lottie JSON between <code className="font-mono text-[10px]">&lt;lottie-json&gt;…&lt;/lottie-json&gt;</code>.
-          </p>
+          <div className="flex items-center gap-3 text-xs">
+            <label className="text-[var(--color-fg-muted)]">Model:</label>
+            <select
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="text-xs"
+            >
+              <option value="claude-opus-4-7">Opus 4.7 (best)</option>
+              <option value="claude-sonnet-4-6">Sonnet 4.6 (fast)</option>
+              <option value="claude-haiku-4-5-20251001">Haiku 4.5 (cheapest)</option>
+            </select>
+            <span className="text-[var(--color-fg-faint)]">
+              Tier 3 calls Claude CLI. Output expected between{" "}
+              <code className="font-mono text-[10px]">&lt;lottie-json&gt;…&lt;/lottie-json&gt;</code>.
+            </span>
+          </div>
         </div>
       )}
 

@@ -25,6 +25,12 @@ export async function startTier3Generation(
 
   try {
     for await (const ev of handle.events) {
+      if (ev.kind === "init") {
+        // Persist the session id so the audit trail captures which Claude
+        // session produced this generation. Fire-and-forget — the meta will
+        // be re-written on the result event with the real numbers.
+        void data.updateGenerationMeta(genId, { session_id: ev.sessionId });
+      }
       if (ev.kind === "text") allText.push(ev.text);
       if (ev.kind === "result") {
         finalText = ev.text;

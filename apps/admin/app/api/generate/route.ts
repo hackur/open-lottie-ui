@@ -93,6 +93,7 @@ async function runTier1(body: Tier1Body): Promise<Response> {
     validation: { ok: validation.valid, errors: validation.errors as unknown[] },
     cost_usd: 0,
     num_turns: 0,
+    params: body.params ?? null,
   });
   await data.setGenerationStatus(gen.id, validation.valid ? "pending-review" : "pending-review");
   // Even if invalid, surface for review so the user can decide.
@@ -125,6 +126,9 @@ async function runTier3(body: Tier3Body): Promise<Response> {
     base_id: body.base_id ?? null,
     prompt_markdown: tier3PromptMd({ prompt: body.prompt, model: body.model ?? "claude-opus-4-7", base_id: body.base_id }),
   });
+
+  // Stash the raw user prompt so edit-and-retry can read it back trivially.
+  await data.updateGenerationMeta(gen.id, { prompt_text: body.prompt });
 
   // Fire-and-forget; the SSE endpoint will replay events.
   startTier3Generation(gen.id, body.prompt, body.model ?? "claude-opus-4-7").catch((err) => {

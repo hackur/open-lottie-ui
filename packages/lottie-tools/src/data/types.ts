@@ -110,6 +110,16 @@ export interface GenerationMeta {
   versions: GenerationVersionInfo[];
   /** Selected version surfaced for review. Null while still running. */
   final_version: number | null;
+  /**
+   * Tier-1 only: the params object originally submitted. Stashed here for
+   * trivial readback by edit-and-retry without re-parsing prompt.md.
+   */
+  params?: Record<string, unknown> | null;
+  /**
+   * Tier-3 only: the user's freeform prompt text, stashed here for trivial
+   * readback by edit-and-retry without re-parsing prompt.md.
+   */
+  prompt_text?: string | null;
 }
 
 export interface GenerationEntry {

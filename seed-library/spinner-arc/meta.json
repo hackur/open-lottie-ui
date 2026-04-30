@@ -1,7 +1,13 @@
 {
   "id": "spinner-arc",
   "title": "Spinner Arc",
-  "tags": ["spinner", "loader", "arc", "ui", "seed"],
+  "tags": [
+    "spinner",
+    "loader",
+    "arc",
+    "ui",
+    "seed"
+  ],
   "source": "seed",
   "source_url": null,
   "license_id": "CC0-1.0",

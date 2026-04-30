@@ -1,0 +1,7 @@
+{"ts":"2026-04-30T02:03:30.666Z","gen":"2026-04-30_cab0bb","action":"created","tier":1,"template_id":"fade-in"}
+{"ts":"2026-04-30T02:03:30.671Z","gen":"2026-04-30_cab0bb","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T02:03:57.148Z","gen":"2026-04-30_ea8578","action":"failed","reason":"No <lottie-json> tag found"}
+{"ts":"2026-04-30T02:04:17.529Z","gen":"2026-04-30_124522","action":"created","tier":1,"template_id":"fade-in"}
+{"ts":"2026-04-30T02:04:17.534Z","gen":"2026-04-30_124522","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T02:04:21.561Z","gen":"2026-04-30_124522","action":"reject","by":"local-user","codes":["delete-test"],"note":"smoke"}
+{"ts":"2026-04-30T02:04:26.019Z","gen":"2026-04-30_124522","action":"deleted_generation","by":"local-user"}
