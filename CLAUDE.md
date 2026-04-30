@@ -6,19 +6,24 @@ Project memory for Claude Code sessions. Read this first.
 
 `open-lottie-ui` — a local-first Next.js admin for browsing, generating, remixing, and exporting Lottie animations. Claude CLI is the LLM driver; humans approve every change.
 
-Currently in **M0 (research & planning)**. No application code yet. All design lives under `docs/`.
+Currently in **M1 (admin runs locally)**. The Next.js app is in `apps/admin`, packages live under `packages/{lottie-tools,claude-driver}`. Run with `pnpm dev` → http://127.0.0.1:3000. M0 docs under `docs/` are still authoritative for design.
 
 ## Where to look
 
-- **Read first:** `README.md`, `docs/00-vision.md`, `docs/SUMMARY.md`.
+- **Read first:** `README.md` (Run it locally), `docs/00-vision.md`, `docs/SUMMARY.md`.
 - **Architecture:** `docs/architecture/system.md` (data flow), `docs/architecture/data-model.md` (on-disk layout), `docs/architecture/claude-integration.md` (how we drive the CLI).
 - **MVP plan:** `docs/architecture/mvp.md`.
-- **Decisions made:** `docs/decisions/` (7 ADRs).
+- **Decisions made:** `docs/decisions/` (8 ADRs; ADR-008 covers the M1 defaults committed without the brainstorm).
 - **Risks:** `docs/research/17-risks.md`.
+- **App entry points:** `apps/admin/app/{library,generate,review,settings}/`. API routes under `apps/admin/app/api/`. Server-only data layer at `packages/lottie-tools/src/data/`. Claude driver at `packages/claude-driver/src/`.
 
 ## Conventions in this repo
 
-- Markdown docs live under `docs/` only. Source code (when it lands) lives under `apps/` and `packages/`.
+- Markdown docs live under `docs/` only. Source code lives under `apps/` and `packages/`.
+- ESM throughout. Use `.ts` in import paths (Node 22+ + Next 15 both support it).
+- Tailwind v4 with CSS-variable theme tokens (see `apps/admin/app/globals.css`).
+- File-system is the database (ADR-002). All writes go through `packages/lottie-tools/src/data/atomic.ts`.
+- Server actions and API routes must `export const runtime = "nodejs"` and `export const dynamic = "force-dynamic"`.
 - ADRs are short (Context → Decision → Consequences → Status). Don't bloat them.
 - Each commit is small and themed; the git log doubles as a research log.
 - The default branch is `main`. No CI yet.
@@ -50,10 +55,12 @@ See `docs/inventory/cli-tools.md` for installation hints.
 
 ## What NOT to do
 
-- Don't write the Next.js app yet — wait for the brainstorm with the user (open questions in `docs/SUMMARY.md` and `docs/brainstorm.md`).
 - Don't start vendoring the LottieFiles asset library — license forbids bulk-mirroring.
 - Don't add API-key dependencies for the LLM driver — Claude CLI uses OAuth; that's intentional (ADR-003).
-- Don't add a database in v1 — file-system is canonical (ADR-002).
+- Don't add a database — file-system is canonical (ADR-002).
+- Don't bypass `data/atomic.ts` for writes; that's where atomic-write + jsonl-append live.
+- Don't import `lottie-web` or `@lottiefiles/dotlottie-web` server-side — they're listed in `serverExternalPackages` and must be dynamic-imported on the client (see `components/lottie-player.tsx`).
+- Don't reach for the real plugin loader yet — M1 ships a hardcoded registry per ADR-008. The manifest format (ADR-007) is real but the loader is M2.
 
 ## When in doubt
 
