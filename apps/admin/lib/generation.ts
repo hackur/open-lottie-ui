@@ -66,29 +66,129 @@ export async function startTier3Generation(
     return;
   }
 
-  const v = validator.validate(json);
+  const v1 = validator.validate(json);
   await data.writeGenerationVersion(genId, 1, json);
   const dir = path.join((await data.getGeneration(genId)).dir);
-  await fs.copyFile(path.join(dir, "v1.json"), path.join(dir, "final.json"));
   await fs.writeFile(path.join(dir, "transcript.md"), fullText, "utf8");
 
+  const versions: { v: number; validated: boolean; errors_count: number }[] = [
+    { v: 1, validated: v1.valid, errors_count: v1.errors.length },
+  ];
+  let finalJson = json;
+  let finalValidation = v1;
+  let finalVersion = 1;
+
+  // Repair attempt: if v1 failed and we have errors, ask Claude to fix them.
+  // M1 caps at 1 repair attempt; controlled by MAX_REPAIRS.
+  const MAX_REPAIRS = 1;
+  let totalCost = costUsd;
+  let totalTurns = numTurns;
+  let totalDuration = durationMs;
+  let repairAttempt = 0;
+  while (!finalValidation.valid && repairAttempt < MAX_REPAIRS) {
+    repairAttempt++;
+    const repairPrompt = buildRepairPrompt(prompt, finalJson, finalValidation.errors);
+    await data.appendDecision({
+      gen: genId,
+      action: "repair_started",
+      attempt: repairAttempt,
+      errors: finalValidation.errors.length,
+    });
+    const repaired = await runRepair(genId, repairPrompt, model);
+    if (repaired.json) {
+      const v = validator.validate(repaired.json);
+      finalVersion = repairAttempt + 1;
+      await data.writeGenerationVersion(genId, finalVersion, repaired.json);
+      versions.push({ v: finalVersion, validated: v.valid, errors_count: v.errors.length });
+      finalJson = repaired.json;
+      finalValidation = v;
+    }
+    totalCost += repaired.costUsd;
+    totalTurns += repaired.numTurns;
+    totalDuration += repaired.durationMs;
+    if (repaired.transcript) {
+      await fs.appendFile(
+        path.join(dir, "transcript.md"),
+        `\n\n---\n\n# Repair v${finalVersion}\n\n${repaired.transcript}`,
+        "utf8",
+      );
+    }
+  }
+
+  await fs.copyFile(path.join(dir, `v${finalVersion}.json`), path.join(dir, "final.json"));
+
   await data.updateGenerationMeta(genId, {
-    final_version: 1,
-    versions: [{ v: 1, validated: v.valid, errors_count: v.errors.length }],
-    validation: { ok: v.valid, errors: v.errors as unknown[] },
-    cost_usd: costUsd,
-    num_turns: numTurns,
-    duration_ms: durationMs,
+    final_version: finalVersion,
+    versions,
+    validation: { ok: finalValidation.valid, errors: finalValidation.errors as unknown[] },
+    cost_usd: totalCost,
+    num_turns: totalTurns,
+    duration_ms: totalDuration,
   });
   await data.setGenerationStatus(genId, "pending-review");
-  await data.appendDecision({ gen: genId, action: "created", model, cost_usd: costUsd });
+  await data.appendDecision({ gen: genId, action: "created", model, cost_usd: totalCost });
   await data.appendDecision({
     gen: genId,
     action: "validated",
-    ok: v.valid,
-    errors: v.errors.length,
+    ok: finalValidation.valid,
+    errors: finalValidation.errors.length,
+    version: finalVersion,
   });
   void success;
+}
+
+function buildRepairPrompt(originalPrompt: string, lastJson: unknown, errors: unknown[]): string {
+  return [
+    "Your previous response did not validate. Apply ONLY the listed fixes and re-emit the corrected Lottie JSON inside <lottie-json>...</lottie-json>.",
+    "",
+    "Original request:",
+    `> ${originalPrompt.split("\n").join("\n> ")}`,
+    "",
+    "Last attempt:",
+    "<lottie-json>",
+    JSON.stringify(lastJson),
+    "</lottie-json>",
+    "",
+    "Validator errors:",
+    "<validator-errors>",
+    JSON.stringify(errors, null, 2),
+    "</validator-errors>",
+  ].join("\n");
+}
+
+async function runRepair(
+  genId: string,
+  prompt: string,
+  model: string,
+): Promise<{ json: unknown | null; transcript: string; costUsd: number; numTurns: number; durationMs: number }> {
+  const repairId = `${genId}_repair`;
+  const handle = startRegistered(repairId, { prompt, model: model as never });
+  const allText: string[] = [];
+  let finalText = "";
+  let costUsd = 0;
+  let numTurns = 0;
+  let durationMs = 0;
+  try {
+    for await (const ev of handle.events) {
+      if (ev.kind === "text") allText.push(ev.text);
+      if (ev.kind === "result") {
+        finalText = ev.text;
+        costUsd = ev.costUsd;
+        numTurns = ev.numTurns;
+        durationMs = ev.durationMs;
+      }
+    }
+  } catch {
+    // Repair failed entirely; caller treats as no-op.
+  }
+  const fullText = finalText || allText.join("");
+  return {
+    json: extractLottieJson(fullText),
+    transcript: fullText,
+    costUsd,
+    numTurns,
+    durationMs,
+  };
 }
 
 function extractLottieJson(text: string): unknown | null {
