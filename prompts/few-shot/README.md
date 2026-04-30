@@ -46,3 +46,14 @@ Hand-validated `(prompt, output)` pairs injected into the system prompt. The dri
 - `repeater-radial-12-spokes.json`
 
 (Stubs only at M0; concrete files land in M1 alongside the driver.)
+
+## Authored corpus (M1)
+
+- `loader-rotating-arc.json` — teal 3/4 arc rotating 360° over 60f; tm trim subset, single shape layer.
+- `success-checkmark-burst.json` — bezier checkmark drawing on via tm, then 4-dot radial burst fading.
+- `error-bell-shake.json` — closed-bezier bell rotating ±15° four times with red badge dot pulsing.
+- `heart-like-tap.json` — bezier heart pop with rotation flick and overshoot, plus 4-dot burst.
+- `progress-bar-determinate.json` — 360×40 rounded track + fill rect with anchored-left scale via ease-out cubic.
+- `color-cross-fade-circle.json` — single shape group with two fills, mirror-opacity 60f loop.
+- `scale-bounce-square.json` — solid square scale 100→115→100 with overshoot bezier tangents over 36f.
+- `typing-three-dots.json` — three grey dots ripple-pulse with phase offsets on 200×80 canvas.

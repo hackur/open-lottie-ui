@@ -61,8 +61,8 @@ export async function POST(req: Request): Promise<Response> {
   // Strip oversized preview blobs from the wire response.
   const lite: ScannedAsset[] = scanned.map((s) => {
     if (s.preview && typeof s.bytes === "number" && s.bytes > PREVIEW_INLINE_MAX_BYTES) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { preview: _omit, ...rest } = s;
+      const { preview, ...rest } = s;
+      void preview;
       return rest;
     }
     return s;

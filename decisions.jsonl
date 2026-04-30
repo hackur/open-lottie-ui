@@ -39,3 +39,5 @@
 {"ts":"2026-04-30T03:50:18.131Z","gen":"2026-04-30_77c028","action":"validated","ok":true,"errors":0}
 {"ts":"2026-04-30T03:50:18.270Z","gen":"2026-04-30_1086f2","action":"created","tier":1,"template_id":"progress-bar"}
 {"ts":"2026-04-30T03:50:18.275Z","gen":"2026-04-30_1086f2","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T03:59:21.937Z","gen":"import_2026-04-30_loader-pulse-imported_44d9c08a","action":"imported_from_url","page_url":null,"asset_url":"http://127.0.0.1:3000/api/library/loader-pulse/animation.json","license_id":"CC0-1.0","bytes":1036,"format":"json"}
+{"ts":"2026-04-30T03:59:29.584Z","gen":"2026-04-30_15e375","action":"failed","reason":"No <lottie-json> tag found"}

@@ -287,8 +287,7 @@ export async function scanCandidates(
     }
   }
 
-  for (let i = 0; i < candidates.length; i++) {
-    const c = candidates[i]!;
+  for (const c of candidates) {
     if (out.length >= maxAssets) {
       out.push({ candidate: c, ok: false, reason: "max-assets-reached" });
       continue;
