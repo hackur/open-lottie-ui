@@ -2,7 +2,7 @@ import "server-only";
 import path from "node:path";
 import fs from "node:fs/promises";
 import { data, validator } from "@open-lottie/lottie-tools";
-import { generate, processRegistry, startRegistered, type DriverEvent } from "@open-lottie/claude-driver";
+import { processRegistry, startRegistered } from "@open-lottie/claude-driver";
 
 /**
  * Spawns the Claude CLI driver for a Tier-3 generation, streams events,

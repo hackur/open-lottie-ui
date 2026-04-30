@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import path from "node:path";
 import fs from "node:fs/promises";
-import { data, templates as t, validator, hash, PATHS } from "@open-lottie/lottie-tools";
+import { data, templates as t, validator } from "@open-lottie/lottie-tools";
 import { startTier3Generation } from "@/lib/generation";
 
 export const runtime = "nodejs";
@@ -46,7 +46,7 @@ async function runTier1(body: Tier1Body): Promise<Response> {
   let template;
   try {
     template = await t.loadTemplate(body.template_id);
-  } catch (e) {
+  } catch {
     return NextResponse.json({ error: `Template not found: ${body.template_id}` }, { status: 404 });
   }
 
