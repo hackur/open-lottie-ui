@@ -199,6 +199,13 @@ export interface GetOrRenderThumbResult {
 export async function getOrRenderThumb(
   opts: GetOrRenderThumbOptions,
 ): Promise<GetOrRenderThumbResult | null> {
+  // Feature-flag gate: if `enable_inlottie` is off we don't even try to
+  // spawn the renderer. Cached PNGs are still served (cheap to read), but
+  // any cache-miss returns null immediately so the route can 404 in <50ms.
+  // The global circuit breaker below remains as a safety net for the case
+  // where the flag is on but the binary is GUI-only / unsupported.
+  const inlottieOn = await isEnabled("enable_inlottie");
+
   const width = opts.width ?? DEFAULT_WIDTH;
   const frame = await resolveFrame(opts.animationPath, opts.frame);
   const out = cachePathFor(opts.contentHash, frame, width);
@@ -206,6 +213,8 @@ export async function getOrRenderThumb(
   if (await fileExistsNonEmpty(out)) {
     return { path: out, cached: true };
   }
+
+  if (!inlottieOn) return null;
 
   // Process-global short-circuit: if any previous render proved the
   // installed `inlottie` is GUI-only / can't write PNGs, every subsequent

@@ -107,6 +107,19 @@ $ pnpm dev
 
 Probe host capabilities anytime: `pnpm detect-tools`.
 
+### Seed sample data (optional)
+
+To populate the local dev server with realistic content exercising every
+feature (11 Tier-1 generations, approvals, rejections, a remix, sample
+imports, pre-exported MOV/WebM/GIF), run:
+
+```
+python3 scripts/seed-samples.py
+```
+
+See [`docs/SAMPLES.md`](docs/SAMPLES.md) for the full list of what gets
+created and how to re-run cleanly.
+
 ## License
 
 **MIT** for application code (see `LICENSE`). Some optional plugins invoke GPL-3.0 / AGPL-3.0 community tools as separate processes; we never link. See [`docs/research/16-licenses.md`](docs/research/16-licenses.md) for the full breakdown.

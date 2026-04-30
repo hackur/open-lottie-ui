@@ -5,15 +5,17 @@ import { mkdtempSync } from "node:fs";
 import { PATHS } from "@open-lottie/lottie-tools";
 import { spawnClaude } from "./spawn.ts";
 import { parseStream } from "./stream-parse.ts";
-import type { DriverEvent, GenerateOptions } from "./types.ts";
+import type { DriverEvent, GenerateOptions, KillOptions } from "./types.ts";
 
-export type { DriverEvent, GenerateOptions } from "./types.ts";
+export type { DriverEvent, GenerateOptions, KillOptions } from "./types.ts";
 
 /**
  * Result of a {@link generate} call. Single-consumer iterable.
  *
  * - `events` is the live event stream; iterate it once.
- * - `kill()` sends SIGTERM to the child.
+ * - `kill()` sends SIGTERM to the child. With `{ graceful: true }` it waits
+ *   up to `timeoutMs` (default 5000) and then sends SIGKILL; the returned
+ *   promise resolves once the child is confirmed dead.
  * - `sessionId` resolves to the Claude session id once the `init` event
  *   arrives, or `null` if the process exits before init.
  * - `child` is the underlying `ChildProcess`; the registry layer needs it,
@@ -21,12 +23,14 @@ export type { DriverEvent, GenerateOptions } from "./types.ts";
  */
 export type GenerateHandle = {
   events: AsyncIterable<DriverEvent>;
-  kill: () => void;
+  kill: (opts?: KillOptions) => Promise<void>;
   sessionId: Promise<string | null>;
   child: ChildProcess;
 };
 
 const DEFAULT_MODEL = "claude-opus-4-7";
+const DEFAULT_SILENCE_TIMEOUT_MS = 60_000;
+const DEFAULT_KILL_GRACE_MS = 5_000;
 
 /**
  * Tools we explicitly forbid the model from invoking. The model's job is to
