@@ -1,5 +1,7 @@
 # Brainstorm prep
 
+> **Status (2026-04-29):** the brainstorm session did not happen before M1 build began. Defaults for B-1..B-6 are committed in [ADR-008](decisions/ADR-008-m1-defaults.md) — the recommendations below were adopted verbatim. Tier 2 questions (B-7..B-11) and Tier 3 (B-12..B-16) remain open. Reopen this doc when revisiting any committed default.
+
 The research is done; the next call with the user is for **deciding scope and direction**. This doc catalogs the questions worth bringing.
 
 ## Tier 1 — must answer before M1 starts

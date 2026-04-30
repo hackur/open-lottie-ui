@@ -13,6 +13,7 @@ Short, dated notes on choices that affect the project's shape. Each ADR follows:
 | [ADR-005](ADR-005-dotlottie-canonical-export.md) | `.lottie` is the canonical export format | Accepted |
 | [ADR-006](ADR-006-no-auth-localhost.md) | No auth; bind to 127.0.0.1 in v1 | Accepted |
 | [ADR-007](ADR-007-plugin-manifest-v1.md) | Plugin system is manifest-driven (`plugin.json` v1) | Accepted |
+| [ADR-008](ADR-008-m1-defaults.md) | M1 defaults committed without brainstorm | Accepted |
 
 ## When to write a new ADR
 
