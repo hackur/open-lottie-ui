@@ -7,6 +7,7 @@ import {
   PythonLottieError,
 } from "@/lib/python-lottie";
 import { requireFlag } from "@/lib/feature-flags";
+import { withErrorCapture } from "@/lib/route-handler";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +22,7 @@ export const dynamic = "force-dynamic";
  * Hands the SVG to python-lottie (separate process), validates the resulting
  * Lottie, and creates a Tier-1 generation pending review.
  */
-export async function POST(req: Request): Promise<Response> {
+export const POST = withErrorCapture("POST /api/import/svg", async (req: Request) => {
   const blocked = await requireFlag("enable_python_lottie");
   if (blocked) return blocked;
 
@@ -129,7 +130,7 @@ export async function POST(req: Request): Promise<Response> {
   });
 
   return NextResponse.json({ id: gen.id });
-}
+});
 
 function importPromptMd(opts: { filename: string; bytes: number }): string {
   return [

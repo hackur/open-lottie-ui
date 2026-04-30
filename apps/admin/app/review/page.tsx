@@ -21,11 +21,21 @@ export default async function ReviewPage() {
     (by[k] ||= []).push(e);
   }
 
+  // Summary chips for the header. Only surface non-zero counts so the line
+  // stays short on a quiet instance.
+  const pending = by["pending-review"]?.length ?? 0;
+  const running = by["running"]?.length ?? 0;
+  const summary: string[] = [
+    `${all.length} generation${all.length === 1 ? "" : "s"}`,
+  ];
+  if (pending) summary.push(`${pending} pending review`);
+  if (running) summary.push(`${running} running`);
+
   return (
     <div>
       <h1 className="mb-1 text-2xl font-semibold tracking-tight">Review</h1>
       <p className="mb-6 text-sm text-[var(--color-fg-muted)]">
-        {all.length} generation{all.length === 1 ? "" : "s"} on disk
+        {summary.join(" · ")}
       </p>
       <div className="space-y-8">
         {STATUS_GROUPS.map((g) => {
@@ -35,8 +45,9 @@ export default async function ReviewPage() {
             <section key={g.id}>
               <h2 className="mb-3 flex items-center gap-2 text-xs uppercase tracking-wider">
                 <span style={{ color: g.tone }}>●</span>
-                <span className="text-[var(--color-fg-muted)]">{g.label}</span>
-                <span className="text-[var(--color-fg-faint)]">({items.length})</span>
+                <span className="text-[var(--color-fg-muted)]">
+                  {g.label} ({items.length})
+                </span>
               </h2>
               <div className="grid grid-cols-1 gap-2">
                 {items.map((it) => (

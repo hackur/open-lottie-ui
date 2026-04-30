@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { data } from "@open-lottie/lottie-tools";
 import { getFlags } from "@/lib/feature-flags";
 import { SidebarNav, type SidebarItem } from "@/components/sidebar-nav";
 
@@ -20,9 +21,23 @@ export async function Sidebar() {
   const flags = await getFlags();
   const anyImportEnabled =
     flags.enable_python_lottie || flags.enable_url_scrape || flags.enable_ffmpeg;
-  const items: SidebarItem[] = anyImportEnabled
-    ? [...BASE_ITEMS]
-    : BASE_ITEMS.filter((i) => i.href !== "/import");
+  // Pending review count for the badge on the Review nav entry. Failures
+  // here are non-fatal — the sidebar should always render.
+  let pendingReviewCount = 0;
+  try {
+    const pending = await data.listGenerations({ status: "pending-review" });
+    pendingReviewCount = pending.length;
+  } catch {
+    pendingReviewCount = 0;
+  }
+
+  const items: SidebarItem[] = (
+    anyImportEnabled ? [...BASE_ITEMS] : BASE_ITEMS.filter((i) => i.href !== "/import")
+  ).map((it) =>
+    it.href === "/review" && pendingReviewCount > 0
+      ? { ...it, badge: pendingReviewCount }
+      : it,
+  );
 
   return (
     <aside className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-elev)]">

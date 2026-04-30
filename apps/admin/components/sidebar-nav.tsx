@@ -4,7 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 
-export type SidebarItem = { href: string; label: string; icon: string };
+export type SidebarItem = {
+  href: string;
+  label: string;
+  icon: string;
+  /** Optional small numeric badge (e.g. count of pending review items). */
+  badge?: number;
+};
 
 /**
  * Client-side sidebar navigation. Receives the (already filtered) items list
@@ -30,7 +36,12 @@ export function SidebarNav({ items }: { items: SidebarItem[] }) {
             )}
           >
             <span className="w-4 text-center text-[var(--color-accent)]">{item.icon}</span>
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {typeof item.badge === "number" && item.badge > 0 && (
+              <span className="rounded-full bg-[var(--color-accent)] px-1.5 py-0.5 text-[10px] font-medium leading-none text-[var(--color-accent-fg)]">
+                {item.badge}
+              </span>
+            )}
           </Link>
         );
       })}

@@ -7,6 +7,7 @@ import {
   VideoImportError,
 } from "@/lib/video-import";
 import { requireFlag } from "@/lib/feature-flags";
+import { withErrorCapture } from "@/lib/route-handler";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -26,7 +27,7 @@ const MAX_INPUT_BYTES = 50 * 1024 * 1024;
  *
  * Returns `{ id, frame_count, bytes_in, bytes_out, warnings }`.
  */
-export async function POST(req: Request): Promise<Response> {
+export const POST = withErrorCapture("POST /api/import/video", async (req: Request) => {
   const blocked = await requireFlag("enable_ffmpeg");
   if (blocked) return blocked;
 
@@ -176,7 +177,7 @@ export async function POST(req: Request): Promise<Response> {
     bytes_out: result.bytes_out,
     warnings: result.warnings,
   });
-}
+});
 
 function parseOptionalInt(raw: string | null): number | undefined {
   if (raw == null || raw === "") return undefined;

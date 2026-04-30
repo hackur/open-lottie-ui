@@ -18,14 +18,17 @@ import { promises as fs } from "node:fs";
 import { NextResponse } from "next/server";
 
 import { data, diff as diffMod, hash, PATHS } from "@open-lottie/lottie-tools";
+import { withErrorCapture } from "@/lib/route-handler";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export const GET = withErrorCapture<{ params: Promise<{ id: string }> }>(
+  "GET /api/review/[id]/diff",
+  async (
+    _req: Request,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
   const { id } = await params;
   const decoded = decodeURIComponent(id);
 
@@ -116,4 +119,5 @@ export async function GET(
     height: result.height,
     summary: `${peakPct}% changed peak`,
   });
-}
+  },
+);
