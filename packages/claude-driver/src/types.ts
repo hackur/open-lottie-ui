@@ -72,9 +72,16 @@ export type DriverEvent =
 export type RegisteredProcess = {
   id: string;
   child: ChildProcess;
-  kill: () => void;
+  /**
+   * Kill the child. Without options this is fire-and-forget SIGTERM (matches
+   * the original synchronous shape — registry consumers can ignore the
+   * returned promise). With `{ graceful: true }` the driver sends SIGTERM,
+   * waits up to `timeoutMs`, then SIGKILL; the promise resolves once the
+   * child is dead.
+   */
+  kill: (opts?: KillOptions) => Promise<void>;
   startedAt: number;
-  status: "running" | "exited";
+  status: "running" | "exited" | "cancelled";
   events: AsyncIterable<DriverEvent>;
   /** Mirror of events as they arrive — useful for late SSE subscribers. */
   buffer: DriverEvent[];

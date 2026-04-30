@@ -15,7 +15,8 @@
     "./plugins": "./src/plugins/index.ts",
     "./pack": "./src/pack/index.ts",
     "./paths": "./src/paths.ts",
-    "./schemas": "./schema/lottie.schema.json"
+    "./schemas": "./schema/lottie.schema.json",
+    "./licenses": "./licenses.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

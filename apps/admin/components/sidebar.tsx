@@ -1,10 +1,8 @@
-"use client";
-
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { clsx } from "clsx";
+import { getFlags } from "@/lib/feature-flags";
+import { SidebarNav, type SidebarItem } from "@/components/sidebar-nav";
 
-const items = [
+const BASE_ITEMS: ReadonlyArray<SidebarItem> = [
   { href: "/library", label: "Library", icon: "▦" },
   { href: "/generate", label: "Generate", icon: "✨" },
   { href: "/import", label: "Import", icon: "↥" },
@@ -13,8 +11,19 @@ const items = [
   { href: "/settings", label: "Settings", icon: "⚙" },
 ];
 
-export function Sidebar() {
-  const pathname = usePathname();
+/**
+ * Server-rendered sidebar. Reads feature flags so the Import nav entry can
+ * be hidden when no import-related sources are enabled. Delegates the
+ * client-only `usePathname` / active-state logic to {@link SidebarNav}.
+ */
+export async function Sidebar() {
+  const flags = await getFlags();
+  const anyImportEnabled =
+    flags.enable_python_lottie || flags.enable_url_scrape || flags.enable_ffmpeg;
+  const items: SidebarItem[] = anyImportEnabled
+    ? [...BASE_ITEMS]
+    : BASE_ITEMS.filter((i) => i.href !== "/import");
+
   return (
     <aside className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-elev)]">
       <div className="px-5 py-5">
@@ -23,27 +32,15 @@ export function Sidebar() {
           <div className="text-xs text-[var(--color-fg-faint)]">local admin</div>
         </Link>
       </div>
-      <nav className="flex-1 px-2">
-        {items.map((item) => {
-          const active = pathname === item.href || pathname?.startsWith(item.href + "/");
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={clsx(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-                active
-                  ? "bg-[var(--color-bg-elev-2)] text-[var(--color-fg)]"
-                  : "text-[var(--color-fg-muted)] hover:bg-[var(--color-bg-elev-2)] hover:text-[var(--color-fg)]",
-              )}
-            >
-              <span className="w-4 text-center text-[var(--color-accent)]">{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
-      </nav>
+      <SidebarNav items={items} />
       <div className="border-t border-[var(--color-border)] p-4 text-xs text-[var(--color-fg-faint)]">
+        <Link
+          href="/__debug"
+          className="mb-2 flex items-center gap-2 text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
+        >
+          <span>🐛</span>
+          <span>debug</span>
+        </Link>
         <div>M1 build · MIT</div>
         <div className="mt-1">claude-cli driven</div>
       </div>

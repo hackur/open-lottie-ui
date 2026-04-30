@@ -34,9 +34,12 @@ export function startRegistered(id: string, opts: GenerateOptions): RegisteredPr
   const entry: RegisteredProcess = {
     id,
     child: handle.child,
-    kill: () => {
-      handle.kill();
-      processRegistry.delete(id);
+    kill: async (killOpts) => {
+      try {
+        await handle.kill(killOpts);
+      } finally {
+        processRegistry.delete(id);
+      }
     },
     startedAt: Date.now(),
     status: "running",

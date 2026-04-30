@@ -3,6 +3,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { data, templates as t, validator } from "@open-lottie/lottie-tools";
 import { startTier3Generation } from "@/lib/generation";
+import { withErrorCapture } from "@/lib/route-handler";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,7 +23,7 @@ type Tier3Body = {
   base_id?: string | null;
 };
 
-export async function POST(req: Request) {
+export const POST = withErrorCapture("POST /api/generate", async (req: Request) => {
   let body: Tier1Body | Tier3Body;
   try {
     body = (await req.json()) as Tier1Body | Tier3Body;
@@ -37,7 +38,7 @@ export async function POST(req: Request) {
     return await runTier3(body);
   }
   return NextResponse.json({ error: "Unknown tier" }, { status: 400 });
-}
+});
 
 async function runTier1(body: Tier1Body): Promise<Response> {
   if (!body.template_id) {

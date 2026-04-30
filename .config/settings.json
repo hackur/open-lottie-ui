@@ -5,5 +5,10 @@
   "default_export_format": "json",
   "max_repair_attempts": 2,
   "concurrent_generations": 5,
-  "theme": "dark"
+  "theme": "dark",
+  "enable_inlottie": false,
+  "enable_glaxnimate": false,
+  "enable_python_lottie": false,
+  "enable_ffmpeg": false,
+  "enable_url_scrape": false
 }

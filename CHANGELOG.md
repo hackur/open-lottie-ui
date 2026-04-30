@@ -2,7 +2,72 @@
 
 All notable changes to this project. The format is loosely based on [Keep a Changelog](https://keepachangelog.com/), and the project adheres to semver from 0.1.0 onward.
 
-## [Unreleased] — M1 (in progress)
+## [Unreleased] — M1 polish round 3 (current)
+
+### Added
+
+- **Feature flags** (`apps/admin/lib/feature-flags.ts`): 5 toggles for external tools (`enable_inlottie`, `enable_glaxnimate`, `enable_python_lottie`, `enable_ffmpeg`, `enable_url_scrape`) all default OFF. M1 ships only the web UI + Tier-1 templates + Tier-3 Claude as the baseline; opt in to external tools from /settings → Features. APIs return 503 when the gating flag is off.
+- **Sample seeder** (`scripts/seed-samples.py`) — populates the dev server with 11 Tier-1 generations across all templates, a remix for visual diff, an SVG/video/URL import (per flags), pre-exported MOV/WebM/GIF samples. See `docs/SAMPLES.md`.
+- **Workflow docs**: `docs/workflows/lottie-to-video.md` (279 lines, 7 ffmpeg invocations, 23 sources) and `docs/workflows/video-to-lottie.md` (306 lines, 4 ffmpeg invocations, 20 sources). Honest framing of the raster/vector tradeoff for video → Lottie.
+- **Lottie → transparent video export** (`/api/library/[id]/export/video?format=mov-prores|webm-vp9|gif`) — alpha-channel ProRes 4444 / VP9 yuva420p / GIF via ffmpeg + a pure-JS fallback rasterizer. Cached. Gated by `enable_ffmpeg`.
+- **Video / GIF / WebP → Lottie import** (`/api/import/video`) — ffmpeg extracts frames, embeds each as a base64 image asset (`ty: 2` layer). Honest UI warning that this is a raster slideshow, not vector. Gated by `enable_ffmpeg`.
+- **URL scrape import** (`/api/import/url/scan` + `fetch`) — paste a URL, server walks HTML for Lottie refs (`<lottie-player>`, `<dotlottie-player>`, anchor links, data-attrs, `loadAnimation()`, inline `<script>`), validates, presents a picker. Per-asset license picker (defaults to `unknown`). Gated by `enable_url_scrape`.
+- **Glaxnimate edit-in plugin** (`/api/library/[id]/glaxnimate`) — spawns Glaxnimate detached, watches for save-back, creates a generation when the file changes. Gated by `enable_glaxnimate`.
+- **python-lottie plugins** — SVG → Lottie import (`/api/import/svg`) and library optimize (`/api/library/[id]/optimize`). AGPL-3.0 boundary preserved by spawning subprocesses. Gated by `enable_python_lottie`.
+- **Visual diff** for remix generations — pixelmatch over inlottie OR pure-JS fallback rasterizer. Verified non-zero diff on red→blue test (27.7% peak). Gated only when both renderers off.
+- **Live Tier-1 preview** on `/generate` — split-pane: params left, render right. POST `/api/templates/[id]/render` (300ms debounce). Submit button labeled "Save to review queue".
+- **Tier-3 hardening**: silence watchdog (60s default — kills hung claude); tool_use events surface in the live stream; multi-strategy Lottie extraction (`<lottie-json>` → ```json fences → JSON heuristic); graceful kill (SIGTERM + 5s grace + SIGKILL).
+- **Repair loop**: on validation failure, re-asks Claude with `<validator-errors>` and writes v2.json. Configurable max_repair_attempts.
+- **Debug visibility**: `/api/debug` snapshot endpoint, `/__debug` page, server-side error ring buffer, error.tsx boundaries on every page, loading.tsx skeletons, per-event `events.ndjson` written per generation.
+- **11 Tier-1 templates** (was 5): + rotate-spin, shake, heartbeat, confetti-burst, typing-dots, progress-bar.
+- **8 seed library entries** (was 3): + heart-beat, success-burst, typing-dots, error-shake, progress-bar.
+- **8 few-shot examples** for the LLM (`prompts/few-shot/*.json`), all validated.
+- **25 categorized starter prompts** (was 8 flat).
+- **`prompts/system/full-schema.md`** — comprehensive Bodymovin reference (~683 lines), 6 worked examples, easing tangent presets.
+- **`.claude/`** project resources: 14 vendored Lottie spec docs (`docs/lottie/`), `skills/lottie-authoring/`, `agents/lottie-author.md`, `commands/{new-template,seed-from-prompt}.md`.
+- `/welcome` first-run page + dismissable flag.
+- `/activity` decisions viewer with action filters.
+- `/healthz` ops endpoint.
+- **Settings**: editable form persisting to `.config/settings.json`. Plugin manifest registry surfaces all 8 stubs with status badges. Cost summary tile.
+- **Library**: search input + tag-chip filter (URL-synced). Renderer toggle (lottie-web ↔ dotlottie-web) on detail. Lazy-load thumbs with hover-to-live-player. Tag editor + license editor + duplicate + bulk select. Delete blocks seeds.
+- **Review**: live transcript with auto-scroll + tool_use surfacing. Edit-and-retry. Cancel. Delete for terminal generations. Reject reason codes + free-text note.
+- **Decisions log** writes for every action (created/validated/approve/reject/committed/cancelled/deleted_*/repair_started/etc).
+
+### Fixed
+
+- **Hydration warning** caused by browser extensions injecting `cz-shortcut-listen` etc — added `suppressHydrationWarning` on `<html>` and `<body>`.
+- **Registry duplicate-event race** — subscribers used to receive each event twice (buffer replay + per-subscriber queue). Replaced with cursor-only buffer access.
+- **Claude exploring the project** — was running with `cwd = repo root`, which leaked CLAUDE.md / docs / package.json visibility. Now runs in an empty `mkdtempSync()`. System prompt also explicitly forbids tool use.
+- **inlottie GUI hang** — every `--version` / `--help` invocation popped a femtovg window. detect-tools now uses file-existence check for known-GUI binaries (`fileOnly: true` + `whichSync()` fallback).
+- **Sharp / dotlottie webpack warnings** silenced via `serverExternalPackages` + `webpack.externals` for `@img/sharp-libvips-*`, `@img/sharp-wasm32`.
+- **`@lottiefiles/dotlottie-js` → `@dotlottie/dotlottie-js`** package rename. The original API guess was wrong (fluent setters); rewritten to the v1.6 options-in-constructor API.
+- **`model: model as never`** sloppy cast removed by widening driver's `GenerateOptions.model` to `(string & {})`.
+- **next.config.ts webpack types** — replaced `import type { Configuration } from "webpack"` (not a project dep) with a structural shape.
+- **6 ESLint warnings** cleaned. Lint exits 0.
+- **Duplicate `useEffect` deps comment** removed from settings-form.tsx.
+- **Hash mismatch on seed verify**: my Python check was wrong (default `ensure_ascii=True` escapes non-ASCII; Node's `JSON.stringify` doesn't). Verified all 8 seed hashes are correct via `node scripts/seed-hash.ts`.
+- **`car-driving.json` misplaced** in `prompts/templates/` (raw Lottie, not a template wrapper). Rescued into `library/car-driving/` with proper meta; deleted from templates.
+- **Form's "Not Found" error** during dev-server reload — non-JSON server response now surfaces a useful message instead of `Unexpected token N`.
+
+### Decided
+
+- ADR-008 — M1 defaults committed without the brainstorm: Tier 1 templates + Tier 3 Claude in M1, in-repo seeds, `.lottie` canonical export, no variants in M1, hardcoded plugins for M1 (manifest format real, loader is M2).
+
+### Verified
+
+- 27/27 unit tests pass.
+- Typecheck clean across all 3 packages.
+- 0 ESLint errors / 0 warnings.
+- 14+ HTTP routes return 200 (or 307/404 as appropriate).
+- Lottie → MOV exports as `yuva444p12le` (verified via ffprobe).
+- Tier-1 generation E2E for all 11 templates: render → validate → review → approve → library promotion → decisions.jsonl entry.
+
+### Blocked / not done
+
+- **animatedicons.co bulk import** — license verification (`docs/inventory/animatedicons-license.md`) found two clauses in their EULA that forbid automated download and redistribution despite the "no attribution required" wording. Not proceeding without express consent.
+- **inlottie headless rendering** — bundled v0.1.9-g is GUI-only on macOS. Server-side rasterization defers to the pure-JS fallback (handles ellipse/rect+fill subset) until a headless build appears or we wire `canvaskit-wasm`.
+
+## [Unreleased] — M1 (initial)
 
 ### Added
 

@@ -80,20 +80,50 @@ export function generate(opts: GenerateOptions): GenerateHandle {
   })().catch(() => {});
 
   let killed = false;
-  const kill = () => {
-    if (killed) return;
+  const waitForExit = (): Promise<void> =>
+    new Promise((resolve) => {
+      if (child.exitCode !== null || child.signalCode !== null) {
+        resolve();
+        return;
+      }
+      child.once("close", () => resolve());
+    });
+
+  const kill = async (killOpts: KillOptions = {}): Promise<void> => {
+    const graceful = killOpts.graceful ?? false;
+    const timeoutMs = killOpts.timeoutMs ?? DEFAULT_KILL_GRACE_MS;
+    if (killed) {
+      // Still expose exit-await semantics — caller may wait for child to die.
+      await waitForExit();
+      return;
+    }
     killed = true;
     try {
       child.kill("SIGTERM");
     } catch {
       // already dead — ignore.
     }
+    if (!graceful) return;
+
+    // Wait up to timeoutMs for SIGTERM to take, then SIGKILL.
+    const exitedInTime = await Promise.race([
+      waitForExit().then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), timeoutMs)),
+    ]);
+    if (!exitedInTime) {
+      try {
+        child.kill("SIGKILL");
+      } catch {
+        // already dead — ignore.
+      }
+      await waitForExit();
+    }
   };
 
   // Wire up AbortSignal if provided.
   if (opts.signal) {
-    if (opts.signal.aborted) kill();
-    else opts.signal.addEventListener("abort", kill, { once: true });
+    if (opts.signal.aborted) void kill();
+    else opts.signal.addEventListener("abort", () => void kill(), { once: true });
   }
 
   // Resolve sessionId on the first `init` event (or null on early exit).
@@ -106,8 +136,85 @@ export function generate(opts: GenerateOptions): GenerateHandle {
   // an error on non-zero exit.
   const state = { sawResult: false, sawInit: false };
 
+  // Silence watchdog. If no event arrives for `silenceTimeoutMs`, emit an
+  // error and kill. The timer is reset on every yielded event (init, text,
+  // tool_use, result, error, raw). A 0/negative value disables the watchdog.
+  const silenceTimeoutMs = opts.silenceTimeoutMs ?? DEFAULT_SILENCE_TIMEOUT_MS;
+  let silenceTimer: ReturnType<typeof setTimeout> | null = null;
+  let silenceTripped = false;
+  const silenceQueue: DriverEvent[] = [];
+  let silenceWaker: (() => void) | null = null;
+  const wakeSilence = () => {
+    if (silenceWaker) {
+      const w = silenceWaker;
+      silenceWaker = null;
+      w();
+    }
+  };
+  const armSilence = () => {
+    if (silenceTimeoutMs <= 0) return;
+    if (silenceTimer) clearTimeout(silenceTimer);
+    silenceTimer = setTimeout(() => {
+      silenceTripped = true;
+      silenceQueue.push({
+        kind: "error",
+        message: `claude went silent for ${Math.round(silenceTimeoutMs / 1000)}s — killing`,
+      } satisfies DriverEvent);
+      wakeSilence();
+      void kill();
+    }, silenceTimeoutMs);
+  };
+  const disarmSilence = () => {
+    if (silenceTimer) {
+      clearTimeout(silenceTimer);
+      silenceTimer = null;
+    }
+  };
+
+  armSilence();
+
   const events: AsyncIterable<DriverEvent> = (async function* () {
-    for await (const ev of parseStream(stdout)) {
+    // Race the parser against the silence watchdog by interleaving them
+    // through a small queue. Drain anything the watchdog has queued each
+    // time we get a chance.
+    const parseIter = parseStream(stdout)[Symbol.asyncIterator]();
+    let parseDone = false;
+    while (true) {
+      // Drain any queued silence-events first so they reach the consumer
+      // even if the parser is mid-await.
+      while (silenceQueue.length > 0) {
+        const ev = silenceQueue.shift()!;
+        yield ev;
+      }
+      if (parseDone) break;
+
+      const nextParse = parseIter.next().then(
+        (r) => ({ kind: "parse" as const, result: r }),
+      );
+      const nextSilence = silenceTripped
+        ? Promise.resolve({ kind: "silence" as const })
+        : new Promise<{ kind: "silence" }>((resolve) => {
+            silenceWaker = () => resolve({ kind: "silence" });
+          });
+
+      const winner = await Promise.race([nextParse, nextSilence]);
+      if (winner.kind === "silence") {
+        // Loop back and drain silenceQueue.
+        continue;
+      }
+      // The parse promise we created is now consumed; we must observe its
+      // result here (otherwise we'd resolve the same iterator twice next
+      // round). Note we deliberately cancelled the silence waker by yielding
+      // — set it back to null so it won't fire stale.
+      silenceWaker = null;
+
+      const { value, done } = winner.result;
+      if (done) {
+        parseDone = true;
+        continue;
+      }
+      const ev = value;
+      armSilence();
       if (ev.kind === "init" && !state.sawInit) {
         state.sawInit = true;
         resolveSession(ev.sessionId);
@@ -116,6 +223,14 @@ export function generate(opts: GenerateOptions): GenerateHandle {
         state.sawResult = true;
       }
       yield ev;
+    }
+
+    disarmSilence();
+
+    // Drain any final silence-queued events (e.g. if the watchdog tripped at
+    // the same moment the parser finished).
+    while (silenceQueue.length > 0) {
+      yield silenceQueue.shift()!;
     }
 
     // stdout closed — wait for the child to actually exit so we can inspect
@@ -127,7 +242,9 @@ export function generate(opts: GenerateOptions): GenerateHandle {
 
     if (!state.sawInit) resolveSession(null);
 
-    if (!state.sawResult && exitCode !== 0) {
+    // If the watchdog tripped, we already emitted an error event; suppress
+    // the generic "killed" message to avoid double-noise.
+    if (!state.sawResult && exitCode !== 0 && !silenceTripped) {
       const trailer = stderrBuffer.trim();
       const message = killed
         ? "claude process was killed"
