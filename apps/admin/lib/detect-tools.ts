@@ -9,6 +9,7 @@ const TOOLS: Array<{ name: string; cmd: string; args: string[] }> = [
   { name: "claude", cmd: "claude", args: ["--version"] },
   { name: "ffmpeg", cmd: "ffmpeg", args: ["-version"] },
   { name: "python3", cmd: "python3", args: ["--version"] },
+  { name: "inlottie", cmd: "inlottie", args: ["--version"] },
   { name: "glaxnimate", cmd: "glaxnimate", args: ["--version"] },
 ];
 

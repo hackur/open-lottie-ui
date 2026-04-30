@@ -42,9 +42,13 @@ echo ""
 echo "── Optional plugin deps ─────────────────────────────────────"
 probe "python3"       python3
 probe "glaxnimate"    glaxnimate
-probe "dotlottie"     dotlottie
-probe_python_pkg     bodymovin
+probe "inlottie"      inlottie
 probe_python_pkg     lottie
 
 echo ""
 echo "Done. Missing tools are not fatal; plugins that need them will appear disabled."
+echo ""
+echo "Install hints:"
+echo "  glaxnimate  — no homebrew cask. Download macOS DMG from https://glaxnimate.org/"
+echo "  inlottie    — \`cargo install inlottie\` (Rust Lottie renderer; provides \`inlottie\`, \`vello\`, \`blend2d\`)"
+echo "  py:lottie   — \`pip3 install --user --break-system-packages lottie\` (python-lottie / AGPL-3.0)"

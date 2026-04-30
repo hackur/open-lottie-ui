@@ -82,7 +82,15 @@ open-lottie-ui/
 ## Run it locally
 
 Requires Node ≥ 20 and `pnpm` (auto-activated via corepack on Node 22+).
-Optional: `claude` CLI (for Tier-3 prompted generation), `ffmpeg`.
+Optional plugin tools (each one degrades gracefully if missing):
+
+- `claude` CLI — Tier-3 prompted generation
+- `ffmpeg` — gif/mp4 export
+- `inlottie` (`cargo install inlottie`) — Rust Lottie renderer for headless thumbnails / diffing
+- `python3` + `pip3 install --user --break-system-packages lottie` — python-lottie (AGPL-3.0) for SVG↔Lottie + optimization
+- `glaxnimate` — vector animation editor; no homebrew cask, install the DMG from <https://glaxnimate.org/>
+
+Run `pnpm detect-tools` to see what's installed.
 
 ```
 $ corepack enable && corepack prepare pnpm@9.15.0 --activate
