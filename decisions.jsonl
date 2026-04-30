@@ -1,0 +1,23 @@
+{"ts":"2026-04-29T19:47:16.493Z","gen":"2026-04-29_362cb3","action":"created","tier":1,"template_id":"color-pulse"}
+{"ts":"2026-04-29T19:47:16.498Z","gen":"2026-04-29_362cb3","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:25.771Z","gen":"2026-04-29_39c723","action":"created","tier":1,"template_id":"color-pulse"}
+{"ts":"2026-04-29T19:47:25.777Z","gen":"2026-04-29_39c723","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:38.642Z","gen":"2026-04-29_566ccc","action":"created","tier":1,"template_id":"color-pulse"}
+{"ts":"2026-04-29T19:47:38.648Z","gen":"2026-04-29_566ccc","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:55.786Z","gen":"2026-04-29_c417cf","action":"created","tier":1,"template_id":"color-pulse"}
+{"ts":"2026-04-29T19:47:55.791Z","gen":"2026-04-29_c417cf","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:55.834Z","gen":"2026-04-29_1d39ad","action":"created","tier":1,"template_id":"fade-in"}
+{"ts":"2026-04-29T19:47:55.840Z","gen":"2026-04-29_1d39ad","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:55.885Z","gen":"2026-04-29_cd08d9","action":"created","tier":1,"template_id":"scale-bounce"}
+{"ts":"2026-04-29T19:47:55.890Z","gen":"2026-04-29_cd08d9","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:55.932Z","gen":"2026-04-29_17e5aa","action":"created","tier":1,"template_id":"draw-on-path"}
+{"ts":"2026-04-29T19:47:55.938Z","gen":"2026-04-29_17e5aa","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:47:55.981Z","gen":"2026-04-29_6e0842","action":"created","tier":1,"template_id":"slide-in"}
+{"ts":"2026-04-29T19:47:55.986Z","gen":"2026-04-29_6e0842","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:48:21.130Z","gen":"2026-04-29_a886ef","action":"created","tier":1,"template_id":"color-pulse"}
+{"ts":"2026-04-29T19:48:21.135Z","gen":"2026-04-29_a886ef","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:48:21.684Z","gen":"2026-04-29_a886ef","action":"reject","by":"local-user","codes":["wrong-color","too-fast"],"note":"Test rejection from smoke harness"}
+{"ts":"2026-04-29T19:48:21.737Z","gen":"2026-04-29_ec3494","action":"created","tier":1,"template_id":"scale-bounce"}
+{"ts":"2026-04-29T19:48:21.741Z","gen":"2026-04-29_ec3494","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-29T19:48:21.899Z","gen":"2026-04-29_ec3494","action":"approve","by":"local-user"}
+{"ts":"2026-04-29T19:48:21.904Z","gen":"2026-04-29_ec3494","action":"committed","library_id":"2026-04-29_roundtrip-test_ec3494"}

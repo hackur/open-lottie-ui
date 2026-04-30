@@ -2,6 +2,42 @@
 
 All notable changes to this project. The format is loosely based on [Keep a Changelog](https://keepachangelog.com/), and the project adheres to semver from 0.1.0 onward.
 
+## [Unreleased] — M1 (in progress)
+
+### Added
+
+- pnpm workspace with `apps/admin` (Next.js 15) + `packages/{lottie-tools,claude-driver}`.
+- `packages/lottie-tools`:
+  - `data/` — readers/writers for `library/`, `generations/`, `decisions.jsonl`; atomic writes; promote-to-library.
+  - `validator/` — ajv against a vendored pragmatic lottie-spec subset; smoke check + full validate.
+  - `hash/` — content-hash (SHA-256 over canonicalized JSON) + intrinsics extractor.
+  - `templates/` — Tier-1 engine (load + param validation + placeholder substitution).
+  - 5 Tier-1 templates filled in: `color-pulse`, `fade-in`, `scale-bounce`, `draw-on-path`, `slide-in`.
+  - `pack/` — `.lottie` ZIP packer + unpacker via `@dotlottie/dotlottie-js`.
+  - `plugins/` — hardcoded M1 registry (`lottie-validate`, `dotlottie-pack`).
+- `packages/claude-driver`:
+  - `claude --print --output-format stream-json …` spawner with line buffering.
+  - Typed `DriverEvent` union (init, text, tool_use, result, error, raw).
+  - `globalThis`-pinned `processRegistry` survives Next HMR; multi-consumer event replay.
+- `apps/admin`:
+  - Tailwind v4 + custom dark theme + sidebar/topbar shell.
+  - `/library` grid + `/library/[id]` detail with side-by-side metadata, license badge, .json + .lottie download.
+  - `/generate` with two tiers: Tier 1 (deterministic template render) and Tier 3 (Claude prompt streaming).
+  - `/review` queue grouped by status + `/review/[id]` with synced side-by-side player, validation panel, approve/reject (a/r keyboard shortcuts), reject reason codes.
+  - `/settings` showing paths, defaults, host capabilities, active plugins.
+  - First-run wizard copies `seed-library/` into `library/` on empty start.
+  - Lottie player component supports both `lottie-web` and `dotlottie-web`, with controlled-frame sync for review.
+  - API routes: `/api/generate` (POST), `/api/generate/[id]/{stream,approve,reject}`, `/api/library/[id]/{animation.json,animation.lottie,preview}`.
+- `seed-library/`: 2 new CC0 entries (`checkmark-success`, `spinner-arc`) alongside `loader-pulse`.
+- `docs/decisions/ADR-008-m1-defaults.md` — committed defaults for the 5 Tier-1 brainstorm questions.
+- Brainstorm doc updated with M1-defaults status header.
+
+### Smoke-tested
+
+- `pnpm install` + `pnpm dev` boots in <1.5s; all 6 main routes return 200.
+- Tier-1 generation (`color-pulse`, default params) → renders valid Lottie → passes validation → approve promotes to library and appends to `decisions.jsonl`.
+- `.lottie` download produces a 768-byte ZIP with `manifest.json` + `a/<id>.json`.
+
 ## [Unreleased] — M0 research & planning
 
 ### Added
