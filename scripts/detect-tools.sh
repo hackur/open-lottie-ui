@@ -9,9 +9,22 @@ set -u
 probe() {
   local name="$1"
   local cmd="$2"
+  shift 2
+  local fallbacks=("$@")
+  local resolved=""
   if command -v "$cmd" >/dev/null 2>&1; then
+    resolved="$cmd"
+  else
+    for f in "${fallbacks[@]}"; do
+      if [ -x "$f" ]; then
+        resolved="$f"
+        break
+      fi
+    done
+  fi
+  if [ -n "$resolved" ]; then
     local v
-    v=$("$cmd" --version 2>&1 | head -n 1 || true)
+    v=$("$resolved" --version 2>&1 | head -n 1 || true)
     printf '✓ %-22s %s\n' "$name" "${v:-(version unknown)}"
   else
     printf '✗ %-22s (not found)\n' "$name"
@@ -41,7 +54,9 @@ probe "ffmpeg"        ffmpeg
 echo ""
 echo "── Optional plugin deps ─────────────────────────────────────"
 probe "python3"       python3
-probe "glaxnimate"    glaxnimate
+probe "glaxnimate"    glaxnimate \
+      "/Applications/glaxnimate.app/Contents/MacOS/glaxnimate" \
+      "/Applications/Glaxnimate.app/Contents/MacOS/glaxnimate"
 probe "inlottie"      inlottie
 probe_python_pkg     lottie
 
