@@ -235,12 +235,7 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
       )}
 
       {meta.status === "running" && (
-        <div className="mb-6 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
-          <div className="mb-2 text-xs uppercase tracking-wider text-[var(--color-fg-muted)]">Live stream</div>
-          <pre className="max-h-48 overflow-auto whitespace-pre-wrap text-xs text-[var(--color-fg)]">
-            {streamLog.join("") || "Waiting for Claude…"}
-          </pre>
-        </div>
+        <LiveStream model={meta.model} log={streamLog} />
       )}
 
       <div className="grid grid-cols-2 gap-4">
@@ -414,6 +409,37 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function LiveStream({ model, log }: { model: string; log: string[] }) {
+  const ref = useRef<HTMLPreElement | null>(null);
+  useEffect(() => {
+    if (ref.current) ref.current.scrollTop = ref.current.scrollHeight;
+  }, [log]);
+  const text = log.join("");
+  const charCount = text.length;
+  return (
+    <div className="mb-6 rounded-md border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-4">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-[var(--color-fg-muted)]">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--color-accent)] opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-[var(--color-accent)]" />
+          </span>
+          Live stream
+        </div>
+        <div className="text-[10px] font-mono text-[var(--color-fg-faint)]">
+          {model} · {charCount} chars
+        </div>
+      </div>
+      <pre
+        ref={ref}
+        className="scrollbar-thin max-h-48 overflow-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-[var(--color-fg)]"
+      >
+        {text || <span className="text-[var(--color-fg-faint)]">Waiting for Claude…</span>}
+      </pre>
     </div>
   );
 }
