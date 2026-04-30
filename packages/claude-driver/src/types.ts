@@ -8,8 +8,16 @@ import type { ChildProcess } from "node:child_process";
 export type GenerateOptions = {
   /** User-facing prompt; sent to the CLI on stdin. */
   prompt: string;
-  /** Model id; defaults to `claude-opus-4-7`. */
-  model?: "claude-opus-4-7" | "claude-sonnet-4-6" | "claude-haiku-4-5-20251001";
+  /**
+   * Model id; defaults to `claude-opus-4-7`. The well-known ids are listed
+   * in the union for autocomplete; arbitrary strings are also accepted so
+   * callers can route to alias models or future ids without a driver bump.
+   */
+  model?:
+    | "claude-opus-4-7"
+    | "claude-sonnet-4-6"
+    | "claude-haiku-4-5-20251001"
+    | (string & {});
   /** Override the system-prompt file path. Defaults to `PATHS.systemPromptDefault`. */
   systemPromptPath?: string;
   /** Working directory to run the CLI in. Defaults to the repo root. */

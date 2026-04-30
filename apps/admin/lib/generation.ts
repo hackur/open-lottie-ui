@@ -14,7 +14,7 @@ export async function startTier3Generation(
   prompt: string,
   model: string,
 ): Promise<void> {
-  const handle = startRegistered(genId, { prompt, model: model as never });
+  const handle = startRegistered(genId, { prompt, model });
 
   const allText: string[] = [];
   let finalText = "";
@@ -162,7 +162,7 @@ async function runRepair(
   model: string,
 ): Promise<{ json: unknown | null; transcript: string; costUsd: number; numTurns: number; durationMs: number }> {
   const repairId = `${genId}_repair`;
-  const handle = startRegistered(repairId, { prompt, model: model as never });
+  const handle = startRegistered(repairId, { prompt, model });
   const allText: string[] = [];
   let finalText = "";
   let costUsd = 0;
