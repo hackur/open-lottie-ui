@@ -5,13 +5,15 @@ import { clsx } from "clsx";
 
 import { ImportSvg } from "@/components/import-svg";
 import { ImportUrl } from "@/components/import-url";
+import { ImportUrlPaste } from "@/components/import-url-paste";
 
-type Tab = "svg-file" | "svg-paste" | "url";
+type Tab = "svg-file" | "svg-paste" | "url-paste" | "url-scan";
 
 const TABS: ReadonlyArray<{ id: Tab; label: string; sub: string }> = [
   { id: "svg-file", label: "SVG file", sub: "Drop or pick an .svg" },
   { id: "svg-paste", label: "Paste SVG", sub: "Paste raw markup" },
-  { id: "url", label: "From URL", sub: "Scrape a webpage" },
+  { id: "url-paste", label: "From URL", sub: "Paste a Lottie URL" },
+  { id: "url-scan", label: "Page scan", sub: "Crawl a webpage" },
 ];
 
 /**

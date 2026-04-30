@@ -42,6 +42,21 @@ probe_python_pkg() {
   fi
 }
 
+# File-only check: report present if any of the supplied paths exists.
+# Used for binaries that pop a GUI for any invocation (e.g. inlottie 0.1.9-g).
+probe_file() {
+  local name="$1"
+  shift
+  for f in "$@"; do
+    if [ -x "$f" ] || [ -f "$f" ]; then
+      printf '✓ %-22s %s\n' "$name" "installed at $f"
+      return 0
+    fi
+  done
+  printf '✗ %-22s (not found)\n' "$name"
+  return 1
+}
+
 echo "── Required ─────────────────────────────────────────────────"
 probe "node"          node
 probe "pnpm"          pnpm
@@ -57,7 +72,9 @@ probe "python3"       python3
 probe "glaxnimate"    glaxnimate \
       "/Applications/glaxnimate.app/Contents/MacOS/glaxnimate" \
       "/Applications/Glaxnimate.app/Contents/MacOS/glaxnimate"
-probe "inlottie"      inlottie
+# inlottie is a GUI viewer — file-only check to avoid popping a window.
+probe_file "inlottie" \
+      "$HOME/.cargo/bin/inlottie"
 probe_python_pkg     lottie
 
 echo ""
