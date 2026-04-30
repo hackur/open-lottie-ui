@@ -5,3 +5,6 @@
 {"ts":"2026-04-30T02:04:17.534Z","gen":"2026-04-30_124522","action":"validated","ok":true,"errors":0}
 {"ts":"2026-04-30T02:04:21.561Z","gen":"2026-04-30_124522","action":"reject","by":"local-user","codes":["delete-test"],"note":"smoke"}
 {"ts":"2026-04-30T02:04:26.019Z","gen":"2026-04-30_124522","action":"deleted_generation","by":"local-user"}
+{"ts":"2026-04-30T03:33:41.258Z","gen":"loader-pulse","action":"opened_in_glaxnimate","library_id":"loader-pulse","binary":"/Applications/Glaxnimate.app/Contents/MacOS/glaxnimate","pid":41450}
+{"ts":"2026-04-30T03:33:54.801Z","gen":"2026-04-30_8ed3e2","action":"created","tier":1,"via":"glaxnimate","base_id":"loader-pulse"}
+{"ts":"2026-04-30T03:33:54.806Z","gen":"2026-04-30_8ed3e2","action":"validated","ok":true,"errors":0}

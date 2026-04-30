@@ -33,7 +33,7 @@ Manifest-driven. `plugin.json` is the only contract. Plugin code can be node, py
 
 ## Status
 
-Accepted, target M2.
+Accepted, target M2. Manifests parse cleanly in M1 via `listPluginManifests()` and are surfaced read-only on `/settings`; the loader/runner is M2.
 
 ## Sources
 

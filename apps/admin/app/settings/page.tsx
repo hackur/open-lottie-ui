@@ -1,17 +1,10 @@
-import fs from "node:fs/promises";
 import { PATHS, plugins } from "@open-lottie/lottie-tools";
 import { detectTools } from "@/lib/detect-tools";
+import { loadSettings } from "@/lib/settings";
+import { SettingsForm } from "@/components/settings-form";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
-
-type Settings = {
-  default_model?: string;
-  default_tier?: number;
-  default_renderer?: "lottie-web" | "dotlottie-web";
-  default_export?: "json" | "lottie";
-  library_path?: string;
-};
 
 const STATUS_LABEL: Record<plugins.PluginStatus, string> = {
   "m1-enabled": "✓ enabled",
@@ -36,7 +29,7 @@ export default async function SettingsPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-1 text-2xl font-semibold tracking-tight">Settings</h1>
       <p className="mb-6 text-sm text-[var(--color-fg-muted)]">
-        Local-only — read from <code className="font-mono text-xs">.config/settings.json</code>.
+        Local-only — saved to <code className="font-mono text-xs">.config/settings.json</code>.
       </p>
 
       <Section title="Paths">
@@ -47,10 +40,7 @@ export default async function SettingsPage() {
       </Section>
 
       <Section title="Defaults">
-        <Row label="Model" value={settings.default_model ?? "claude-opus-4-7"} />
-        <Row label="Tier" value={String(settings.default_tier ?? 1)} />
-        <Row label="Renderer" value={settings.default_renderer ?? "lottie-web"} />
-        <Row label="Export format" value={settings.default_export ?? "lottie"} />
+        <SettingsForm initial={settings} />
       </Section>
 
       <Section title="Host capabilities">
@@ -81,20 +71,99 @@ export default async function SettingsPage() {
         ))}
       </Section>
 
-      <p className="mt-6 text-xs text-[var(--color-fg-faint)]">
-        M1 settings are read-only. Edit <code className="font-mono">.config/settings.json</code> by hand for now.
-      </p>
+      <Section title="All plugins (manifest registry)">
+        {sortByStatus(allPlugins).map((p) => (
+          <PluginCard key={p.id} plugin={p} />
+        ))}
+        <p className="mt-2 pt-2 border-t border-[var(--color-border)] text-xs text-[var(--color-fg-faint)]">
+          Manifests parsed from <code className="font-mono">plugins/&lt;id&gt;/plugin.json</code>. The
+          manifest-driven loader lands in M2 (ADR-007).
+        </p>
+      </Section>
+
     </div>
   );
 }
 
-async function loadSettings(): Promise<Settings> {
-  try {
-    const raw = await fs.readFile(PATHS.settings, "utf8");
-    return JSON.parse(raw) as Settings;
-  } catch {
-    return {};
+const STATUS_ORDER: Record<plugins.PluginStatus, number> = {
+  "m1-enabled": 0,
+  "m1-stub": 1,
+  "m1-stub-needs-tool": 2,
+};
+
+function sortByStatus(list: plugins.PluginManifestWithStatus[]): plugins.PluginManifestWithStatus[] {
+  return [...list].sort((a, b) => {
+    const d = STATUS_ORDER[a.status] - STATUS_ORDER[b.status];
+    return d !== 0 ? d : a.id.localeCompare(b.id);
+  });
+}
+
+function surfaceLabel(s: unknown): string | null {
+  if (typeof s === "string") return s;
+  if (s && typeof s === "object" && "type" in s && typeof (s as { type: unknown }).type === "string") {
+    return (s as { type: string }).type;
   }
+  return null;
+}
+
+function PluginCard({ plugin }: { plugin: plugins.PluginManifestWithStatus }) {
+  const title = plugin.title ?? plugin.name ?? plugin.id;
+  const surfaces = (plugin.surfaces ?? [])
+    .map(surfaceLabel)
+    .filter((x): x is string => Boolean(x));
+  const statusLine =
+    plugin.status === "m1-stub-needs-tool" && plugin.missing_tools?.length
+      ? `⚠ needs ${plugin.missing_tools.join(", ")}`
+      : STATUS_LABEL[plugin.status];
+
+  return (
+    <div className="border-b border-[var(--color-border)] py-2 last:border-0 last:pb-0 first:pt-0">
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="font-medium">{title}</span>
+        <span className={`text-xs ${STATUS_CLASS[plugin.status]}`}>{statusLine}</span>
+      </div>
+      <div className="mt-0.5 text-xs text-[var(--color-fg-muted)]">
+        <code className="font-mono">{plugin.id}</code>
+      </div>
+      {plugin.description && (
+        <p className="mt-1 text-xs text-[var(--color-fg-muted)]">{plugin.description}</p>
+      )}
+      <div className="mt-1 flex flex-wrap items-center gap-1.5">
+        {plugin.license && <Badge>{plugin.license}</Badge>}
+        {plugin.external_tool_license && (
+          <Badge title="External tool license">tool: {plugin.external_tool_license}</Badge>
+        )}
+        {surfaces.map((s) => (
+          <Badge key={s} variant="muted">
+            {s}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Badge({
+  children,
+  variant = "default",
+  title,
+}: {
+  children: React.ReactNode;
+  variant?: "default" | "muted";
+  title?: string;
+}) {
+  const cls =
+    variant === "muted"
+      ? "border-[var(--color-border)] text-[var(--color-fg-muted)]"
+      : "border-[var(--color-border)] text-[var(--color-fg)]";
+  return (
+    <span
+      title={title}
+      className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-mono ${cls}`}
+    >
+      {children}
+    </span>
+  );
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {

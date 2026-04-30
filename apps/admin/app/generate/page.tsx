@@ -2,6 +2,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { PATHS, data, templates as t } from "@open-lottie/lottie-tools";
 import { GenerateForm } from "@/components/generate-form";
+import { loadSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -22,6 +23,7 @@ export default async function GeneratePage({
 }) {
   const sp = await searchParams;
 
+  const settings = await loadSettings();
   const starters = await loadStarters();
   const templateIds = await t.listTemplates();
   const templateMetas = await Promise.all(
@@ -40,7 +42,13 @@ export default async function GeneratePage({
   let initialPrompt = sp.prompt ?? "";
   let initialTemplateId = sp.template ?? null;
   let initialParams: Record<string, unknown> | null = null;
-  let initialTier: 1 | 3 = initialTemplateId ? 1 : 3;
+  // When no retry/template URL params are present, fall back to the saved
+  // user default tier; otherwise honor the URL hint.
+  let initialTier: 1 | 3 = initialTemplateId
+    ? 1
+    : sp.retry
+      ? 3
+      : settings.default_tier;
   let remixBase = sp.remix ?? null;
   let retrySource: { id: string; tier: number; template_id: string | null } | null = null;
 
@@ -83,6 +91,8 @@ export default async function GeneratePage({
         initialParams={initialParams}
         initialTier={initialTier}
         remixBase={remixBase}
+        defaultModel={settings.default_model}
+        defaultTier={settings.default_tier}
       />
     </div>
   );

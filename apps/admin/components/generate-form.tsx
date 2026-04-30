@@ -27,6 +27,8 @@ type Props = {
   initialParams?: Record<string, unknown> | null;
   initialTier?: 1 | 3;
   remixBase: string | null;
+  defaultModel?: string;
+  defaultTier?: 1 | 3;
 };
 
 export function GenerateForm({
@@ -37,8 +39,12 @@ export function GenerateForm({
   initialParams,
   initialTier,
   remixBase,
+  defaultModel,
+  defaultTier,
 }: Props) {
-  const [tier, setTier] = useState<1 | 3>(initialTier ?? (initialTemplateId ? 1 : 3));
+  const [tier, setTier] = useState<1 | 3>(
+    initialTier ?? (initialTemplateId ? 1 : defaultTier ?? 3),
+  );
   const [prompt, setPrompt] = useState(initialPrompt);
   const [templateId, setTemplateId] = useState<string | null>(
     initialTemplateId ?? templates[0]?.id ?? null,
@@ -49,7 +55,7 @@ export function GenerateForm({
     }
     return {};
   });
-  const [model, setModel] = useState<string>("claude-opus-4-7");
+  const [model, setModel] = useState<string>(defaultModel ?? "claude-opus-4-7");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();

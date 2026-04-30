@@ -1,0 +1,9 @@
+{
+  "default_model": "claude-sonnet-4-6",
+  "default_tier": 1,
+  "default_renderer": "lottie-web",
+  "default_export_format": "lottie",
+  "max_repair_attempts": 1,
+  "concurrent_generations": 3,
+  "theme": "system"
+}
