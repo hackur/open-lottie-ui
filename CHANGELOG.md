@@ -32,11 +32,34 @@ All notable changes to this project. The format is loosely based on [Keep a Chan
 - `docs/decisions/ADR-008-m1-defaults.md` — committed defaults for the 5 Tier-1 brainstorm questions.
 - Brainstorm doc updated with M1-defaults status header.
 
+### Polish round (post-initial M1)
+
+- **Routes:** `/welcome` (first-run dismissable), `/activity` (last 200 decisions table), `/import` (SVG import via python-lottie), `/healthz` (ops endpoint).
+- **Library:** search input + frequency-sorted tag chips with URL sync; renderer toggle (lottie-web ↔ dotlottie-web) on detail page; tag click-through; danger-zone delete (blocks seeds); lazy-load thumbs with hover-to-live-player.
+- **Review:** edit-and-retry button (recovers params/prompt from generation history); cancel button for in-progress generations; delete for terminal generations; live transcript pulse + auto-scroll; visual diff strip for remix generations.
+- **Generate:** Tier-3 model selector (Opus 4.7 / Sonnet 4.6 / Haiku 4.5); robust non-JSON error handling for dev-server reload glitches; auto-fills from `?retry=<id>`.
+- **Settings:** editable form (model, tier, renderer, export format, max repair attempts, concurrent generations, theme); persists to `.config/settings.json`; surfaces all 8 plugin manifests with status badges.
+- **Plugins:**
+  - Glaxnimate edit-in (`/api/library/[id]/glaxnimate`) — spawns Glaxnimate.app detached; globalThis-pinned save-back watcher creates a new generation when the file mtime changes.
+  - python-lottie SVG import (`/api/import/svg`) and library optimization (`/api/library/[id]/optimize`) via separate-process subprocess calls (AGPL-3.0 boundary preserved).
+  - Plugin manifest registry — reads all 8 `plugins/*/plugin.json` and surfaces them on /settings with `m1-enabled` / `m1-stub` / `m1-stub-needs-tool` status.
+- **Generation pipeline:** Tier-3 captures session_id on the `init` event; one-shot repair loop on validation failure (resends `<validator-errors>` to Claude, writes v2.json, picks final by validity).
+- **Quality:** ESLint flat config (0 errors / 0 warnings); 17 data-layer tests + 10 driver tests passing; sharp/libvips webpack warnings silenced; 27 unit tests pass.
+- **Dev experience:** detect-tools resolves Glaxnimate via `/Applications/glaxnimate.app/Contents/MacOS/glaxnimate` macOS fallback; install hints for `inlottie` and `python-lottie`.
+- **ADR-008:** committed defaults for the 5 Tier-1 brainstorm questions (Tier 1 + 3 in M1, in-repo seeds, .lottie canonical, no variants in M1, hardcoded plugins for M1).
+
 ### Smoke-tested
 
-- `pnpm install` + `pnpm dev` boots in <1.5s; all 6 main routes return 200.
-- Tier-1 generation (`color-pulse`, default params) → renders valid Lottie → passes validation → approve promotes to library and appends to `decisions.jsonl`.
-- `.lottie` download produces a 768-byte ZIP with `manifest.json` + `a/<id>.json`.
+- `pnpm install` + `pnpm dev` boots in <1.5s; all 9 main routes return 200.
+- Tier-1 generation E2E: pick template + params → render → review → approve → promote to library → decisions.jsonl entry.
+- `.lottie` download produces a valid ZIP (PK signature, manifest.json + animations/<id>.json).
+- All 5 Tier-1 templates render valid Lottie passing validation: color-pulse, fade-in, scale-bounce, draw-on-path, slide-in.
+- Reject + delete + cancel flows confirmed.
+- Glaxnimate launch + save-back watcher creates a new generation within 3s of file mtime change.
+
+### Known limitations
+
+- `inlottie` is a GUI-only viewer (femtovg backend) on macOS — server-side thumbnail generation via inlottie isn't usable. Library cards fall back to client-side lottie-web rendering, which is fine for M1-sized libraries. Server-side rasterization (`canvaskit-wasm` or puppeteer) is a future-work item.
 
 ## [Unreleased] — M0 research & planning
 

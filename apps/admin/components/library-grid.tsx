@@ -23,6 +23,52 @@ type Props = {
   initialTag?: string;
 };
 
+/**
+ * Renders a static PNG thumb (cheap, cached on disk) by default, and
+ * swaps to a live `LottiePlayer` on hover or focus. If the thumb endpoint
+ * 404s — typically because `inlottie` isn't installed — silently falls
+ * back to the live player so the page still works end-to-end.
+ */
+function LibraryCardMedia({
+  id,
+  animationData,
+}: {
+  id: string;
+  animationData: unknown | null;
+}) {
+  const [thumbBroken, setThumbBroken] = useState(false);
+  const [live, setLive] = useState(false);
+
+  const showLive = (live || thumbBroken) && animationData != null;
+  const thumbUrl = `/api/library/${encodeURIComponent(id)}/thumb`;
+
+  return (
+    <div
+      className="relative aspect-square w-full overflow-hidden rounded-md bg-[var(--color-bg-elev-2)]"
+      onMouseEnter={() => setLive(true)}
+      onFocus={() => setLive(true)}
+    >
+      {showLive ? (
+        <LottiePlayer animationData={animationData} renderer="lottie-web" />
+      ) : !thumbBroken ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={thumbUrl}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-contain"
+          onError={() => setThumbBroken(true)}
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center text-xs text-[var(--color-fg-faint)]">
+          no animation
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function LibraryGrid({ entries, animations, initialQuery = "", initialTag = "" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -160,13 +206,7 @@ export function LibraryGrid({ entries, animations, initialQuery = "", initialTag
                 href={`/library/${encodeURIComponent(entry.id)}`}
                 className="group block rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-elev)] p-3 transition-colors hover:border-[var(--color-accent)]"
               >
-                {animations[i] ? (
-                  <LottiePlayer animationData={animations[i]} renderer="lottie-web" />
-                ) : (
-                  <div className="flex aspect-square w-full items-center justify-center rounded-md bg-[var(--color-bg-elev-2)] text-xs text-[var(--color-fg-faint)]">
-                    no animation
-                  </div>
-                )}
+                <LibraryCardMedia id={entry.id} animationData={animations[i]} />
                 <div className="mt-3 flex items-baseline justify-between gap-2">
                   <div className="truncate text-sm font-medium">{entry.meta.title || entry.id}</div>
                   <LicenseBadge id={entry.meta.license_id} />

@@ -8,6 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./data": "./src/data/index.ts",
+    "./diff": "./src/diff/index.ts",
     "./validator": "./src/validator/index.ts",
     "./hash": "./src/hash/index.ts",
     "./templates": "./src/templates/index.ts",
@@ -23,10 +24,14 @@
   "dependencies": {
     "@dotlottie/dotlottie-js": "^1.6.0",
     "ajv": "^8.17.1",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "pixelmatch": "^7",
+    "pngjs": "^7"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/pixelmatch": "^5.2.6",
+    "@types/pngjs": "^6.0.5",
     "typescript": "^5.7.0"
   }
 }

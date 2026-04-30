@@ -8,3 +8,7 @@
 {"ts":"2026-04-30T03:33:41.258Z","gen":"loader-pulse","action":"opened_in_glaxnimate","library_id":"loader-pulse","binary":"/Applications/Glaxnimate.app/Contents/MacOS/glaxnimate","pid":41450}
 {"ts":"2026-04-30T03:33:54.801Z","gen":"2026-04-30_8ed3e2","action":"created","tier":1,"via":"glaxnimate","base_id":"loader-pulse"}
 {"ts":"2026-04-30T03:33:54.806Z","gen":"2026-04-30_8ed3e2","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T03:36:32.156Z","gen":"2026-04-30_bbcc18","action":"created","tier":1,"plugin":"python-lottie:svg","filename":"imported.svg","bytes_in":114}
+{"ts":"2026-04-30T03:36:32.161Z","gen":"2026-04-30_bbcc18","action":"validated","ok":true,"errors":0}
+{"ts":"2026-04-30T03:36:40.264Z","gen":"2026-04-30_611660","action":"created","tier":1,"plugin":"python-lottie:optimize","base_library_id":"loader-pulse","before_bytes":1240,"after_bytes":1180}
+{"ts":"2026-04-30T03:36:40.269Z","gen":"2026-04-30_611660","action":"validated","ok":true,"errors":0}

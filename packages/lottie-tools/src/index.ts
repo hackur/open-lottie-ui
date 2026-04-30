@@ -1,4 +1,5 @@
 export * as data from "./data/index.ts";
+export * as diff from "./diff/index.ts";
 export * as validator from "./validator/index.ts";
 export * as hash from "./hash/index.ts";
 export * as templates from "./templates/index.ts";

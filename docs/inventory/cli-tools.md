@@ -19,14 +19,15 @@ These are external binaries we shell out to. The app degrades gracefully when th
 
 ## Optional plugin dependencies
 
-| Tool | What it's for | Install | License |
+| Tool | What it's for | Install (mac, verified) | License |
 |---|---|---|---|
-| `dotlottie-rs` (CLI) | Native pack/unpack/render of `.lottie`. | `cargo install dotlottie-cli` or pre-built binary | MIT |
-| **`glaxnimate`** | Open-source Lottie editor. Used by the `glaxnimate-roundtrip` plugin. | `brew install --cask glaxnimate` / Flathub on Linux | GPL-3.0 |
-| **`python` ≥ 3.10** + `pip` | For Python-based plugins. | `brew install python` | PSF |
-| **`bodymovin-python`** | Programmatic Lottie generation (Tier 2 prompting). | `pip install bodymovin` | MIT |
-| **`python-lottie`** | High-level animation helpers (draw-on, IK, conversions). | `pip install lottie cairosvg pillow` | AGPL-3.0 ⚠ — see `research/16-licenses.md` |
+| **`glaxnimate`** | Open-source Lottie editor. Powers the `glaxnimate-roundtrip` plugin. | macOS DMG from <https://glaxnimate.org/> (no homebrew cask). Detect resolves `/Applications/glaxnimate.app/Contents/MacOS/glaxnimate` automatically. | GPL-3.0 |
+| **`python3` ≥ 3.10** + `pip` | For Python-based plugins. | `brew install python` (already there with system python on macOS 13+). | PSF |
+| **`python-lottie`** | High-level Lottie helpers — SVG↔Lottie conversion, optimization passes. Powers the `svg-import` and `lottie-optimize` plugins. | `pip3 install --user --break-system-packages lottie` | AGPL-3.0 ⚠ — separate-process invocation only; never linked. See `research/16-licenses.md`. |
+| `inlottie` | Rust Lottie renderer (femtovg/vello/blend2d). On macOS only ships a GUI viewer — not currently used for headless rendering. | `cargo install inlottie` | MIT |
 | `imagemagick` | Image conversions / GIF assembly fallback. | `brew install imagemagick` | ImageMagick license |
+| ~~`dotlottie-rs` CLI~~ | The crates.io `dotlottie-rs@0.1.0-alpha.1` is a library, not a CLI binary. Use `@dotlottie/dotlottie-js` (npm, MIT) for in-process pack/unpack — already wired into `packages/lottie-tools`. | n/a | n/a |
+| ~~`bodymovin-python`~~ | Not on PyPI under that name; `python-lottie` (above) covers the same surface area. | n/a | n/a |
 
 ## Tool detection at startup
 

@@ -1,9 +1,9 @@
 {
-  "default_model": "claude-sonnet-4-6",
-  "default_tier": 3,
-  "default_renderer": "lottie-web",
-  "default_export_format": "lottie",
-  "max_repair_attempts": 1,
-  "concurrent_generations": 3,
-  "theme": "system"
+  "default_model": "claude-opus-4-7",
+  "default_tier": 1,
+  "default_renderer": "dotlottie-web",
+  "default_export_format": "json",
+  "max_repair_attempts": 2,
+  "concurrent_generations": 5,
+  "theme": "dark"
 }
