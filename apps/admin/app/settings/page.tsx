@@ -1,4 +1,4 @@
-import { PATHS, plugins } from "@open-lottie/lottie-tools";
+import { PATHS, data, plugins } from "@open-lottie/lottie-tools";
 import { detectTools } from "@/lib/detect-tools";
 import { loadSettings } from "@/lib/settings";
 import { FLAG_CATALOG, type FeatureFlag } from "@/lib/feature-flags";
@@ -36,12 +36,63 @@ const FLAG_TOOL_MAP: Record<FeatureFlag, string | null> = {
   enable_url_scrape: null,
 };
 
+/**
+ * Walk every generation and aggregate `cost_usd`. Cheap on a local instance
+ * (we already do this on /review). Returns total, last-7-day, last-30-day,
+ * and top-3-by-cost-per-model breakdowns.
+ */
+async function computeSpend(): Promise<{
+  total: number;
+  last7: number;
+  last30: number;
+  topModels: Array<{ model: string; cost: number; count: number }>;
+  count: number;
+}> {
+  const generations = await data.listGenerations();
+  const now = Date.now();
+  const day = 24 * 60 * 60 * 1000;
+  const cutoff7 = now - 7 * day;
+  const cutoff30 = now - 30 * day;
+
+  let total = 0;
+  let last7 = 0;
+  let last30 = 0;
+  const byModel = new Map<string, { cost: number; count: number }>();
+
+  for (const g of generations) {
+    const cost = typeof g.meta.cost_usd === "number" ? g.meta.cost_usd : 0;
+    if (!cost) continue;
+    total += cost;
+    const startedMs = Date.parse(g.meta.started_at);
+    if (!Number.isNaN(startedMs)) {
+      if (startedMs >= cutoff7) last7 += cost;
+      if (startedMs >= cutoff30) last30 += cost;
+    }
+    const model = g.meta.model || "unknown";
+    const existing = byModel.get(model) ?? { cost: 0, count: 0 };
+    byModel.set(model, { cost: existing.cost + cost, count: existing.count + 1 });
+  }
+
+  const topModels = Array.from(byModel.entries())
+    .map(([model, v]) => ({ model, cost: v.cost, count: v.count }))
+    .sort((a, b) => b.cost - a.cost)
+    .slice(0, 3);
+
+  return { total, last7, last30, topModels, count: generations.length };
+}
+
+function fmtUsd(n: number): string {
+  // Up to 4 decimal places — costs are tiny.
+  return `$${n.toFixed(4)}`;
+}
+
 export default async function SettingsPage() {
   const settings = await loadSettings();
   const tools = await detectTools();
   const enabledPlugins = plugins.listPlugins();
   const toolStatusMap = Object.fromEntries(tools.map((t) => [t.name, t.found]));
   const allPlugins = await plugins.listPluginsWithStatus(toolStatusMap);
+  const spend = await computeSpend();
 
   const flagItems: FeatureFlagItem[] = FLAG_CATALOG.map((info) => {
     const toolName = FLAG_TOOL_MAP[info.flag];
@@ -67,6 +118,40 @@ export default async function SettingsPage() {
         <Row label="Library" value={<code className="font-mono text-xs">{PATHS.library}</code>} />
         <Row label="Generations" value={<code className="font-mono text-xs">{PATHS.generations}</code>} />
         <Row label="Decisions" value={<code className="font-mono text-xs">{PATHS.decisions}</code>} />
+      </Section>
+
+      <Section title="Spend">
+        <Row label="Total" value={fmtUsd(spend.total)} />
+        <Row label="Last 7 days" value={fmtUsd(spend.last7)} />
+        <Row label="Last 30 days" value={fmtUsd(spend.last30)} />
+        <Row label="Generations" value={String(spend.count)} />
+        {spend.topModels.length > 0 && (
+          <div className="mt-2 border-t border-[var(--color-border)] pt-2">
+            <div className="mb-1 text-[10px] uppercase tracking-wider text-[var(--color-fg-faint)]">
+              Top models by cost
+            </div>
+            {spend.topModels.map((m) => (
+              <Row
+                key={m.model}
+                label={
+                  <span className="flex items-center gap-1.5">
+                    <code className="font-mono text-xs">{m.model}</code>
+                    <span className="text-[10px] text-[var(--color-fg-faint)]">
+                      × {m.count}
+                    </span>
+                  </span>
+                }
+                value={fmtUsd(m.cost)}
+              />
+            ))}
+          </div>
+        )}
+        {spend.total === 0 && (
+          <p className="text-[10px] text-[var(--color-fg-faint)]">
+            No paid generations yet. Tier-1 templates and python-lottie
+            optimize cost $0.
+          </p>
+        )}
       </Section>
 
       <Section title="Defaults">
@@ -215,7 +300,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+function Row({
+  label,
+  value,
+}: {
+  label: React.ReactNode;
+  value: React.ReactNode;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-sm">
       <span className="text-[var(--color-fg-muted)]">{label}</span>

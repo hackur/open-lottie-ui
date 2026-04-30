@@ -27,6 +27,16 @@ const config: NextConfig = {
     "sharp",
     "sharp-phash",
   ],
+  // Surface /__debug as a top-level URL while keeping the underlying route
+  // folder name routable. Next.js treats any path segment starting with `_`
+  // as a private folder, so the page lives at `app/debug/page.tsx` and we
+  // alias the leading-underscore URL via a rewrite.
+  async rewrites() {
+    return [
+      { source: "/__debug", destination: "/debug" },
+      { source: "/__debug/:path*", destination: "/debug/:path*" },
+    ];
+  },
   webpack: (cfg: WebpackConfigShape) => {
     const externals = (cfg.externals = (cfg.externals as unknown[]) || []);
     if (Array.isArray(externals)) {

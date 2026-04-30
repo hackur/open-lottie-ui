@@ -50,7 +50,7 @@ export async function Sidebar() {
       <SidebarNav items={items} />
       <div className="border-t border-[var(--color-border)] p-4 text-xs text-[var(--color-fg-faint)]">
         <Link
-          href="/__debug"
+          href="/debug"
           className="mb-2 flex items-center gap-2 text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
         >
           <span>🐛</span>

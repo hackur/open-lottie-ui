@@ -93,10 +93,10 @@ export function RouteError({
             {copied ? "Copied!" : "Copy details"}
           </button>
           <a
-            href="/__debug"
+            href="/debug"
             className="rounded-md border border-[var(--color-border)] px-3 py-1.5 text-sm text-[var(--color-fg-muted)] hover:text-[var(--color-fg)]"
           >
-            Open /__debug
+            Open /debug
           </a>
         </div>
         {error.digest && (
