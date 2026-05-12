@@ -146,3 +146,15 @@ All notable changes to this project. The format is loosely based on [Keep a Chan
 
 - No application code yet. The Next.js scaffold begins at M1.
 - License is MIT for application code. AGPL/GPL plugins are invoked as separate processes (see ADR-002 / `docs/research/16-licenses.md`).
+
+## Available major upgrades (not applied)
+
+- `next 15.5.15 → 16.2.6` — App Router internals changed; needs a Next 16 migration codemod pass.
+- `typescript 5.9.3 → 6.0.3` — major; check breaking changes in noUncheckedIndexedAccess defaults.
+- `eslint 9.39.4 → 10.3.0` — flat config still default; verify rule-set compatibility.
+- `eslint-plugin-react-hooks 5.2.0 → 7.1.1` — rules renamed; needs eslint config update.
+- `@eslint/js 9.39.4 → 10.0.1` — pairs with eslint 10.
+- `@next/eslint-plugin-next 15.5.15 → 16.2.6` — pairs with next 16.
+- `tailwind-merge 2.6.1 → 3.6.0` — v3 dropped certain class merges; audit callers.
+- `globals 15.15.0 → 17.6.0` — paired with eslint 10.
+- `@types/node 22.19.17 → 25.7.0` — paired with Node 25 runtime (already on 25); LOW RISK but minor surface changes.

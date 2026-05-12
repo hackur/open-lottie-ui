@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { loadSettings, saveSettings, SettingsValidationError } from "@/lib/settings";
+import { invalidateToolsCache } from "@/lib/detect-tools";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +19,10 @@ export async function PUT(req: Request) {
   }
   try {
     const next = await saveSettings(body as Record<string, unknown>);
+    // Settings changes (especially feature-flag toggles) may correlate with
+    // the user installing/enabling host tools — drop the 60s detectTools()
+    // cache so the next /settings render re-probes immediately.
+    invalidateToolsCache();
     return NextResponse.json(next);
   } catch (e) {
     if (e instanceof SettingsValidationError) {

@@ -17,15 +17,11 @@ All persistent state is files. The shape:
 ├── generations/                          # in-flight + reviewed generations
 │   ├── 2026-04-27_a1b2c3/
 │   │   ├── prompt.md                     # full prompt + system + params
-│   │   ├── claude-stream.ndjson          # raw CLI output
+│   │   ├── events.ndjson                 # driver events (init, text, tool_use, result, error)
 │   │   ├── v1.json                       # first attempt
 │   │   ├── v2.json                       # repair attempt (if any)
 │   │   ├── final.json                    # the version we surfaced for review
-│   │   ├── thumb.png
-│   │   ├── frames/                       # sampled frames for visual diff
-│   │   │   ├── 0.png
-│   │   │   ├── 15.png
-│   │   │   └── ...
+│   │   ├── thumb.png                     # (lazy; only rendered if requested)
 │   │   └── meta.json                     # status, base_id, model, cost, validation
 │   └── ...
 │
@@ -169,30 +165,37 @@ See `plugins.md` for the full schema.
 
 ```jsonc
 {
-  "default_model": "claude-opus-4-7",
-  "default_tier": 1,
-  "max_repair_attempts": 3,
-  "concurrent_generations": 3,
-  "library_path": "./library",
-  "puppeteer_pool_size": 2,
-  "tool_paths": { /* overrides for which() lookups */ },
-  "theme": "system"
+  "default_model": "claude-sonnet-4-6",
+  "default_tier": 3,
+  "default_renderer": "dotlottie-web",
+  "default_export_format": "json",
+  "max_repair_attempts": 2,
+  "concurrent_generations": 5,
+  "theme": "dark",
+
+  // Feature flags (all OFF by default except enable_glaxnimate)
+  "enable_inlottie": false,
+  "enable_glaxnimate": true,
+  "enable_python_lottie": false,
+  "enable_ffmpeg": false,
+  "enable_url_scrape": false
 }
 ```
 
+See `apps/admin/lib/settings.ts` for the actual schema and `apps/admin/lib/feature-flags.ts` for what each flag gates.
+
 ## Read paths
 
-- **List library**: `glob library/*/meta.json`, parse each. Cache in memory; invalidate via chokidar.
-- **Show item**: read `library/{id}/animation.json` + `meta.json` + `thumb.png`.
+- **List library**: `glob library/*/meta.json`, parse each. No in-memory cache today; routes are `dynamic = "force-dynamic"`.
+- **Show item**: read `library/{id}/animation.json` + `meta.json` + `thumb.png` (thumb rendered lazily on first GET via `apps/admin/lib/thumbnail.ts`).
 - **Show generation review**: read `generations/{id}/final.json` + base library item if `base_id`.
-- **Recent decisions**: tail `decisions.jsonl` (last N lines).
+- **Recent decisions**: tail `decisions.jsonl` (last N lines). The `kind` field on `failed`/`reject` rows narrates *why* — `rate_limited`, `tool_narration`, `empty`, `no_tag` are the driver-level classifications produced by `diagnoseTranscript()` in `apps/admin/lib/generation.ts`.
 
 ## Write paths
 
-- All writes go through `lib/store/`. Helpers:
-  - `writeFileAtomic(path, data)` — write to tmp then rename.
-  - `appendJsonl(path, obj)` — open-append-close.
-  - `commitGenerationToLibrary(genId, opts)` — copies generation files into a new `library/<id>/`.
+- All writes go through `packages/lottie-tools/src/data/`. Helpers:
+  - `atomic.ts`: `writeFileAtomic(path, data)` — write to tmp then rename. `appendJsonl(path, obj)` — open-append-close.
+  - `library.ts` / `generations.ts` / `decisions.ts` / `promote.ts` — typed reads + writes.
 - No two writers contend (single-process app); no locking needed.
 
 ## Git friendliness

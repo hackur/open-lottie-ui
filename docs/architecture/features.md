@@ -2,31 +2,31 @@
 
 Features are bucketed M1 (week-1 MVP), M2 (~month 1), M3 (~quarter 1), and Later. The MVP cut is the test of "is this project alive?" — everything else can slip without killing it.
 
-## M1 — MVP (week 1)
+## M1 — MVP (week 1) — **shipped**
 
 **Goal**: a single user can browse a local library, generate a new animation from a prompt, review it side-by-side, approve or reject.
 
-- [ ] **Local library scan**: point at a directory; recursively load `.json` and `.lottie`; thumbnail per item.
-- [ ] **Library grid view** with search and tag filter.
-- [ ] **Item detail view**: full lottie-web preview with play/pause/scrub, JSON view, metadata.
-- [ ] **Prompt-driven generation** (Tier 1 templates + Tier 3 raw JSON):
-  - [ ] Prompt form with model + tier selector (advanced drawer).
-  - [ ] Server action spawns Claude CLI with stream-json output.
-  - [ ] Live token stream surfaced in UI via SSE.
-  - [ ] Output validated against `lottie-spec` JSON Schema.
-  - [ ] Auto-render thumbnail of generated file.
-- [ ] **Review queue** at `/review`: list of pending generations.
-- [ ] **Side-by-side review** at `/review/{id}`: original (or blank) on the left, generation on the right; synced scrub.
-- [ ] **Approve / reject** with reason codes; appended to `decisions.jsonl`.
-- [ ] **Approved → library**: file copied into `library/` with metadata sidecar.
-- [ ] **Export to `.lottie`** button on any library item, using `dotlottie-js`.
-- [ ] **Settings**: detect installed CLI tools (claude, ffmpeg, glaxnimate, …), show install hints.
+- [x] **Local library scan**: `packages/lottie-tools/src/data/library.ts`; thumbnail per item lazily via `apps/admin/lib/thumbnail.ts`.
+- [x] **Library grid view** with search, tag filter, source filter, sort, and pagination (`library-grid.tsx`).
+- [x] **Item detail view**: lottie-web preview, tag/license editors, duplicate, optimize, export.
+- [x] **Prompt-driven generation** (Tier 1 templates + Tier 3 raw JSON):
+  - [x] Prompt form with model + tier selector.
+  - [x] Server action spawns Claude CLI with stream-json output.
+  - [x] Live token stream surfaced in UI via SSE (`/api/generate/[id]/stream`).
+  - [x] Output validated against `lottie-spec` JSON Schema.
+  - [x] Auto-render thumbnail of generated file.
+- [x] **Review queue** at `/review`.
+- [x] **Side-by-side review** at `/review/{id}` with synced scrub + keyboard shortcuts.
+- [x] **Approve / reject** with reason codes; appended to `decisions.jsonl` (with `kind` classification on failures).
+- [x] **Approved → library** via `data/promote.ts`.
+- [x] **Export to `.lottie`** (and `.json`, and video via `/api/library/[id]/export/video`).
+- [x] **Settings**: feature flags, default model/tier/renderer, tool detection.
 
-Out-of-scope explicitly:
+Out-of-scope explicitly (still deferred):
 
-- ~~Plugin system~~ (M2)
-- ~~Visual diff~~ (M2)
-- ~~Remix workflow~~ (M2 — manual remix via "edit prompt and retry" is fine for M1)
+- ~~Plugin loader~~ (M2; actions are hardcoded in route handlers)
+- ~~Visual diff heatmap~~ (M2; `visual-diff.tsx` exists for two-frame compare only)
+- ~~Remix workflow as a first-class flow~~ (M2)
 - ~~Variant batch generation~~ (M2)
 - ~~Multi-user~~ (Later)
 
@@ -45,12 +45,11 @@ Out-of-scope explicitly:
 
 ## M3 — Power-user features (~quarter 1)
 
-- [ ] **More plugins**:
-  - `glaxnimate-roundtrip` (open in Glaxnimate, watch on save, re-import).
-  - `lottie-optimize` (configurable optimization passes).
-  - `gif-export`, `mp4-export` (via ffmpeg).
-  - `dotlottie-render` (use the Rust CLI for fast rendering).
-  - `python-lottie-helpers` (draw-on / IK presets).
+- [x] **`glaxnimate-roundtrip` pulled forward** — shipped in M1 behind `enable_glaxnimate` (`apps/admin/lib/glaxnimate.ts` save-back watcher).
+- [x] **`lottie-optimize` pulled forward** — shipped in M1 behind `enable_python_lottie` (`/api/library/[id]/optimize`).
+- [x] **`gif-export` / `mp4-export` pulled forward** — shipped in M1 as a unified MOV/WebM/GIF export behind `enable_ffmpeg`.
+- [ ] **`dotlottie-render`** — blocked: `dotlottie-rs` doesn't ship a CLI binary; track upstream.
+- [ ] **`python-lottie-helpers`** (draw-on / IK presets beyond SVG import + optimize).
 - [ ] **External source plugins** (browse-and-import for LottieFiles, Lordicon, useAnimations).
 - [ ] **State machine editor** (visual, on top of dotLottie state machine spec).
 - [ ] **Theme editor** (build LSS themes against a chosen animation).

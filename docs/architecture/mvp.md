@@ -2,75 +2,59 @@
 
 The minimum to prove "human-in-the-loop, Claude-driven Lottie generation, in a local Next.js app, is real."
 
+> **Status (2026-05-11):** M1 is substantially shipped. Items struck through below are live. The remaining work (Tier-2 Python scripts, real plugin loader) is M2.
+
 ## The user story we're solving
 
 > "I open the admin, see my existing animations, type a prompt, watch Claude generate a new one, compare it side-by-side with whatever I had, approve it with a keystroke, and export it."
 
 ## Concrete features in scope
 
-1. **Project scaffold**
-   - `pnpm create next-app` (App Router, TS, Tailwind).
-   - `shadcn-ui init` and add `button`, `card`, `dialog`, `input`, `textarea`, `select`, `command`, `toast`, `sonner`, `tabs`, `tooltip`, `resizable`, `scroll-area`, `skeleton`, `dropdown-menu`.
-   - Workspace layout: `apps/admin/`, `packages/lottie-tools/`, `packages/claude-driver/`.
-   - `pnpm-workspace.yaml`, root scripts (`dev`, `build`, `lint`, `test`).
+1. ~~**Project scaffold**~~ — done. `apps/admin/`, `packages/lottie-tools/`, `packages/claude-driver/`, pnpm workspace.
 
-2. **Library scan + grid**
-   - `lib/store/library.ts` — scan `library/`, parse `meta.json`s, compute `intrinsic` from animation data.
-   - `/library` page — TanStack Table with thumbnails, name, fr/op, tags.
-   - Search box, tag filter (single tag), source filter.
-   - Click → detail.
+2. ~~**Library scan + grid**~~ — done. `packages/lottie-tools/src/data/library.ts` scans `library/`; `/library` renders a paginated grid (`library-grid.tsx`) with filter + sort + source.
 
-3. **Library item detail**
-   - `/library/[id]` — lottie-react preview with play/pause/scrub.
-   - Sidebar: meta, license badge, "open in editor" → finder, "export to .lottie".
+3. ~~**Library item detail**~~ — done. `/library/[id]` plays via `lottie-player.tsx`, with tag/license editors, duplicate, optimize, glaxnimate-edit, and export buttons.
 
-4. **Thumbnail generation**
-   - On import / first view, render frame 0 via lottie-web → SVG → resvg → PNG.
-   - Cache under `.cache/thumbs/{contentHash}.png`.
-   - Fallback to puppeteer-lottie if SVG render fails (image layers).
+4. ~~**Thumbnail generation**~~ — done. `apps/admin/lib/thumbnail.ts` does lottie-web → SVG → `@resvg/resvg-js` → PNG, cached under `.cache/thumbs/`. No puppeteer fallback shipped (none has been needed).
 
-5. **Validator**
-   - `lib/lottie/validate.ts` with vendored `lottie-spec` schema + ajv.
-   - Used at import (block invalid) and after Claude returns (gate review).
+5. ~~**Validator**~~ — done. `packages/lottie-tools/src/validator/` with vendored `lottie-spec` schema + ajv.
 
-6. **Claude driver (single-process, single-tier first)**
-   - `packages/claude-driver/` exports `generate()` per `claude-integration.md`.
-   - v1 supports **Tier 3 (raw JSON) only** to start, with the repair loop. We add Tier 1 templates as we have time in week 1; if not, M2.
-   - System prompt vendored as `prompts/system/default.md`.
+6. **Claude driver** — Tier 3 (raw JSON) shipped via `packages/claude-driver/src/generate.ts` + `apps/admin/lib/generation.ts` (repair loop, transcript diagnosis). Tier 1 templates shipped (parameter substitution, no model call). Tier 2 (Python script) **deferred to M2.**
 
-7. **SSE streaming**
-   - `app/api/stream/[id]/route.ts` per `research/12-process-management.md`.
-   - Process registry in `globalThis`.
+7. ~~**SSE streaming**~~ — done. `/api/generate/[id]/stream/route.ts`, registry in `packages/claude-driver/src/registry.ts`.
 
-8. **Generate form**
-   - `/generate` page — textarea + submit.
-   - Submit → server action → spawn child → return `{ id }` → client navigates to `/review/{id}`.
+8. ~~**Generate form**~~ — done. `/generate` with tier selector + template params or freeform prompt.
 
-9. **Review queue + detail**
-   - `/review` lists generations with `status === "pending-review"`.
-   - `/review/[id]` shows side-by-side: blank/base on left, generation on right; synced scrub. Buttons: Approve / Reject (with reason codes). Keyboard: a / r / j / k / space.
+9. ~~**Review queue + detail**~~ — done. `/review` and `/review/[id]` with side-by-side + approve/reject + keyboard shortcuts in `review-client.tsx`.
 
-10. **Approve flow**
-    - On approve: copy `generations/{id}/final.json` to `library/{newId}/animation.json`, write `meta.json`, update thumbnail, append `decisions.jsonl`.
+10. ~~**Approve flow**~~ — done. `promote.ts` copies `generations/{id}/final.json` to `library/{newId}/`, writes meta, appends decisions.
 
-11. **Reject flow**
-    - On reject: just log decision; generation stays archived under `generations/{id}/` with `status === "rejected"`.
+11. ~~**Reject flow**~~ — done. Decision logged with `kind` classification (`rate_limited` / `tool_narration` / `empty` / `no_tag` for driver failures).
 
-12. **Export**
-    - "Export to .lottie" button uses `@lottiefiles/dotlottie-js` to pack a single animation. Single-file download.
+12. ~~**Export**~~ — done. `/api/library/[id]/animation.lottie` packs via `@dotlottie/dotlottie-js`; `.json` also available; video export (MOV/WebM/GIF) via `/api/library/[id]/export/video` (flag-gated).
 
-13. **Settings**
-    - `/settings` — tool detection (claude, ffmpeg, glaxnimate), version display, model selector, library path picker.
+13. ~~**Settings**~~ — done. `/settings` shows feature flags, default model/tier/renderer, tool detection (claude/ffmpeg/python3/inlottie/glaxnimate, cached 60s).
 
-## What we explicitly defer
+## What we explicitly defer (still deferred after M1)
 
-- Plugin system — for M1 the few plugins above are hardcoded.
-- Visual diff (heatmap) — the human eye is enough for week 1.
-- Remix workflow — partially covered by "edit prompt and retry" in the review screen.
-- Variant batching — single generation per submit.
-- External source plugins (LottieFiles browse, etc.) — drag-drop only.
-- Tag editor — tags are manual JSON edit in v1.
-- Theming.
+- Plugin loader (manifest-driven) — actions remain hardcoded in route handlers per ADR-008. M2.
+- Visual diff (heatmap) — `visual-diff.tsx` exists for two-frame compare; full heatmap deferred. M2.
+- Remix workflow as a first-class flow — partial via "edit prompt and retry" + Tier-1 duplicate. M2.
+- Variant batching — single generation per submit. M2.
+- External source plugins (LottieFiles browse, etc.) — URL-paste import shipped (flag-gated); browse is M3.
+- Tier 2 (Python script generation tier). M2.
+
+## What landed beyond the original MVP
+
+- **Import surfaces:** SVG import, URL paste, URL scan, video import (all flag-gated).
+- **Tag editor:** inline on library detail (`library-tag-editor.tsx`).
+- **License editor + badge** on every library item.
+- **Theming:** dark mode default; theme setting in `/settings`.
+- **Glaxnimate edit-in-place** with save-back watcher (`apps/admin/lib/glaxnimate.ts`).
+- **Activity log** at `/activity` (tails `decisions.jsonl`).
+- **Debug surface** at `/debug` with server snapshot and error log.
+- **First-run welcome ack** at `/welcome`.
 
 ## Success gate
 

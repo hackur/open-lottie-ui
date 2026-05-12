@@ -163,8 +163,11 @@ test("graceful kill SIGTERMs then SIGKILLs after timeout", async () => {
       for await (const ev of handle.events) drained.push(ev);
     })();
 
-    // Small wait so the child is up.
-    await new Promise((r) => setTimeout(r, 100));
+    // Wait until the child has actually started and emitted init — fixed
+    // sleeps are racy on macOS where Node startup can exceed 100ms, and we
+    // need the child's SIGTERM handler installed before we send the signal.
+    const sid = await handle.sessionId;
+    assert.ok(sid, "expected init event before kill");
 
     const start = Date.now();
     await handle.kill({ graceful: true, timeoutMs: 250 });

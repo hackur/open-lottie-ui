@@ -7,8 +7,8 @@ These are external binaries we shell out to. The app degrades gracefully when th
 | Tool | What it's for | Install (mac) | License |
 |---|---|---|---|
 | **`claude`** (Claude CLI) | The generator. | `brew install --cask claude-code` or installer | proprietary (Claude Code app license) |
-| **Node.js ≥ 20** | Runtime. | `brew install node` | MIT |
-| **`pnpm`** | Package manager (npm/yarn also fine). | `corepack enable` | MIT |
+| **Node.js 25** (≥ 20 supported) | Runtime. | `brew install node` (or fnm/nvm) | MIT |
+| **`pnpm` 9.15** | Package manager. **Required** — `npm install` does NOT hydrate workspace packages. | `corepack enable && corepack prepare pnpm@9.15.0 --activate` | MIT |
 
 ## Recommended (most plugins assume these)
 
@@ -44,7 +44,9 @@ const TOOLS = [
 ];
 ```
 
-Each tool's resolved path is exposed via `resolveTool(name)`; plugins use that path to spawn the binary directly (avoiding PATH lookup at request time). Results are surfaced on `/settings` as a checklist with install hints. Plugins that need a missing tool render disabled.
+Each tool's resolved path is exposed via `resolveTool(name)`; plugins use that path to spawn the binary directly (avoiding PATH lookup at request time). Results are **cached for 60s in-process** (`apps/admin/lib/detect-tools.ts`) to avoid Qt Dock-icon thrash on macOS — every page render would otherwise re-spawn each tool's `--version` probe. `/settings` exposes `invalidateToolsCache()` after the user installs something so the next probe is fresh.
+
+Most external-tool features are also behind feature flags in `apps/admin/lib/feature-flags.ts` (`enable_ffmpeg`, `enable_python_lottie`, `enable_glaxnimate`, `enable_inlottie`, `enable_url_scrape`). All default OFF except `enable_glaxnimate`. Results are surfaced on `/settings` as a checklist with install hints.
 
 ## Why each tool is here
 

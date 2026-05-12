@@ -18,14 +18,30 @@ const REJECT_CODES: { code: string; label: string }[] = [
   { code: "off-prompt", label: "Off-prompt" },
 ];
 
+type FailureDiag = { kind: string; reason: string; detail?: string };
+
 type Props = {
   meta: GenerationMeta;
   animation: unknown;
   baseAnimation: unknown;
   transcript: string | null;
+  failureDiag?: FailureDiag | null;
 };
 
-export function ReviewClient({ meta, animation, baseAnimation, transcript }: Props) {
+const DIAG_LABEL: Record<string, string> = {
+  rate_limited: "Rate-limited",
+  empty: "Empty transcript",
+  tool_narration: "Tool narration",
+  no_tag: "No <lottie-json> tag",
+};
+
+export function ReviewClient({
+  meta,
+  animation,
+  baseAnimation,
+  transcript,
+  failureDiag,
+}: Props) {
   const router = useRouter();
   const [streamLog, setStreamLog] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
@@ -233,6 +249,25 @@ export function ReviewClient({ meta, animation, baseAnimation, transcript }: Pro
       {error && (
         <div className="mb-4 rounded-md border border-[var(--color-danger)] px-3 py-2 text-sm text-[var(--color-danger)]">
           {error}
+        </div>
+      )}
+
+      {failureDiag && (
+        <div className="mb-4 rounded-md border border-[var(--color-danger)] bg-[var(--color-bg-elev)] px-4 py-3 text-sm">
+          <div className="flex items-baseline justify-between gap-3">
+            <div className="font-medium text-[var(--color-danger)]">
+              {DIAG_LABEL[failureDiag.kind] ?? failureDiag.kind}
+            </div>
+            <code className="font-mono text-[10px] text-[var(--color-fg-faint)]">
+              {failureDiag.kind}
+            </code>
+          </div>
+          <div className="mt-1 text-[var(--color-fg-muted)]">{failureDiag.reason}</div>
+          {failureDiag.detail && (
+            <pre className="mt-2 max-h-32 overflow-auto whitespace-pre-wrap rounded border border-[var(--color-border)] bg-[var(--color-bg)] p-2 font-mono text-[11px] text-[var(--color-fg-muted)]">
+              {failureDiag.detail}
+            </pre>
+          )}
         </div>
       )}
 

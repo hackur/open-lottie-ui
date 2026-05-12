@@ -2,6 +2,8 @@
 
 A local-only Next.js app with one process, a file-system backing store, and out-of-process tools invoked via `child_process`.
 
+> **As-shipped in M1:** the diagram below is the design target. Today the Claude driver and data layer are split into workspace packages (`packages/claude-driver/`, `packages/lottie-tools/src/data/`). The plugin loader is **not** yet implemented (M2); plugin manifests under `plugins/` are stubs and the UI hardcodes the available actions per ADR-008. Thumbnail rendering goes through `lottie-web` + `resvg`-on-Node via `apps/admin/lib/thumbnail.ts` — no puppeteer pool. File-watching is not in use; routes are `dynamic = "force-dynamic"` and re-read on each request.
+
 ## High-level diagram
 
 ```mermaid
@@ -85,31 +87,32 @@ flowchart LR
 - Stores the child process, accumulated ndjson lines, subscribers, status.
 - Survives HMR but not full restarts (running children die with the parent).
 
-### Claude driver (`lib/claude/`)
+### Claude driver (`packages/claude-driver/src/`)
 
-- Spawns `claude -p ... --output-format stream-json --verbose ...`.
-- Parses ndjson, dispatches typed events (`onSystem`, `onAssistantDelta`, `onToolUse`, `onResult`).
-- Tracks cost and tokens; writes to `decisions.jsonl` on completion.
+- Spawns `claude --print --output-format stream-json --verbose --permission-mode bypassPermissions --disallowed-tools Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch,TodoWrite --append-system-prompt @<system-prompt>`.
+- Runs the child in an empty tmp `cwd` so the model never sees the project's `CLAUDE.md`/`docs/`.
+- Parses ndjson via `stream-parse.ts`, emits typed events (`init`, `text`, `tool_use`, `result`, `error`, `raw`).
+- 60s silence watchdog kills the child if no event arrives; emits a synthetic `error` event.
+- Cost/turns/duration land in the final `result` event; `apps/admin/lib/generation.ts` writes them to `decisions.jsonl` and `generations/<id>/meta.json`. A `diagnoseTranscript()` helper classifies empty/rate-limited/tool-narration/no-tag failures into a `kind` field on the decisions row.
 
-### Plugin loader (`lib/plugins/`)
+### Plugin loader (M2, not in M1)
 
-- On boot, globs `plugins/*/plugin.json`, validates each manifest with zod.
-- Exposes `runPlugin(id, input, opts)` which spawns the plugin's declared command, pipes Lottie JSON in, captures output, validates, returns.
-- UI renders plugin buttons on the relevant pages based on each manifest's `surfaces` field.
+- Designed as: glob `plugins/*/plugin.json`, validate manifests with zod, expose `runPlugin(id, input, opts)`.
+- M1 ships a hardcoded set of actions (optimize, duplicate, export-video, glaxnimate-roundtrip) wired straight into route handlers per ADR-008. Manifest format is real (ADR-007) but unused at runtime.
 
-### Store layer (`lib/store/`)
+### Store layer (`packages/lottie-tools/src/data/`)
 
-- All file-system access goes through here.
-- Functions: `listLibrary`, `getItem(id)`, `writeGeneration(id, json)`, `appendDecision(d)`, etc.
-- Uses `chokidar` to watch `library/` and `generations/` and revalidate Next caches.
+- All file-system access goes through here. Modules: `atomic.ts` (write-tmp-then-rename + jsonl append), `library.ts`, `generations.ts`, `decisions.ts`, `promote.ts`, `types.ts`, `index.ts`.
+- Read paths re-scan on each request (routes are `dynamic = "force-dynamic"`); no in-memory cache, no chokidar.
 - No DB. Files are the source of truth.
 
-### Headless renderer (`lib/lottie/render.ts`)
+### Renderer / thumbnails (`apps/admin/lib/thumbnail.ts`)
 
-- Wraps `puppeteer-lottie` (heavy) and `lottie-web → resvg` SVG path (light).
-- Caches frames under `.cache/thumbs/{contentHash}/`.
+- `lottie-web` → SVG → `@resvg/resvg-js` → PNG; runs in the Node runtime per route.
+- Cached under `.cache/thumbs/<contentHash>.png` (lazily, on first GET of `/api/library/[id]/thumb`).
+- No puppeteer pool today.
 
-### Validator (`lib/lottie/validate.ts`)
+### Validator (`packages/lottie-tools/src/validator/`)
 
 - ajv-compiled `lottie-spec` JSON Schema.
 - Plus a few custom lints (expressions present, text layers, broken refs).
@@ -155,7 +158,7 @@ sequenceDiagram
 
 ## Concurrency model
 
-- **One Node process.** No worker threads in v1; the registry handles parallelism by capping concurrent children (default 3).
+- **One Node process.** No worker threads in v1; the registry handles parallelism by capping concurrent children (default 5; see `.config/settings.json`'s `concurrent_generations`).
 - Claude CLI invocations are independent processes; OS schedules them.
 - Renderer pool: 1–2 puppeteer instances reused across requests.
 - Plugin runs are serialized per plugin id (some plugins write to shared resources like Glaxnimate's project files).

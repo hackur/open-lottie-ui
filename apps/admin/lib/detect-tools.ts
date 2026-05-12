@@ -77,7 +77,39 @@ async function tryProbe(cmd: string, args: string[]): Promise<string | null> {
   }
 }
 
+/**
+ * Cache `detectTools()` across requests. Without this, every page render
+ * (HostStatus lives in the root layout) re-spawns every tool's --version
+ * probe. On macOS, Qt apps like Glaxnimate flash a Dock icon for every
+ * spawn — visible as rapid Dock-icon thrash. Cache for 60s; the /settings
+ * page calls `invalidateToolsCache()` after the user installs something.
+ */
+const TOOLS_CACHE_TTL_MS = 60_000;
+type CacheEntry = { at: number; promise: Promise<ToolStatus[]> };
+const CACHE_KEY = Symbol.for("open-lottie.toolsCache");
+type GlobalWithCache = typeof globalThis & { [CACHE_KEY]?: CacheEntry | null };
+const gc = globalThis as GlobalWithCache;
+
+export function invalidateToolsCache(): void {
+  gc[CACHE_KEY] = null;
+}
+
 export async function detectTools(): Promise<ToolStatus[]> {
+  const now = Date.now();
+  const cached = gc[CACHE_KEY];
+  if (cached && now - cached.at < TOOLS_CACHE_TTL_MS) {
+    return cached.promise;
+  }
+  const promise = detectToolsUncached();
+  gc[CACHE_KEY] = { at: now, promise };
+  // If the probe throws, drop the cache so the next call retries.
+  promise.catch(() => {
+    if (gc[CACHE_KEY]?.promise === promise) gc[CACHE_KEY] = null;
+  });
+  return promise;
+}
+
+async function detectToolsUncached(): Promise<ToolStatus[]> {
   return Promise.all(
     TOOLS.map(async ({ name, cmd, args, fallbacks = [], fileOnly, fileOnlyVersion }) => {
       // file-only path: never spawn — just locate the binary.

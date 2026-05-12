@@ -142,7 +142,12 @@ export default async function ActivityPage({
                   <tr key={i} className="border-t border-[var(--color-border)]">
                     <td className="px-3 py-2 font-mono text-xs text-[var(--color-fg-muted)]">{time}</td>
                     <td className="px-3 py-2">
-                      <ActionBadge action={String(e.action)} />
+                      <ActionBadge
+                        action={String(e.action)}
+                        kind={
+                          typeof e.kind === "string" && e.kind ? e.kind : undefined
+                        }
+                      />
                     </td>
                     <td className="px-3 py-2">
                       <Link
@@ -164,11 +169,11 @@ export default async function ActivityPage({
   );
 }
 
-function ActionBadge({ action }: { action: string }) {
+function ActionBadge({ action, kind }: { action: string; kind?: string }) {
   const tone =
     action === "approve" || action === "committed"
       ? "var(--color-success)"
-      : action === "reject" || action.startsWith("deleted")
+      : action === "reject" || action.startsWith("deleted") || action === "failed"
         ? "var(--color-danger)"
         : action === "validated"
           ? "var(--color-fg-muted)"
@@ -177,20 +182,41 @@ function ActionBadge({ action }: { action: string }) {
     <span className="inline-flex items-center gap-1.5 text-xs">
       <span style={{ color: tone }}>●</span>
       <span>{action}</span>
+      {kind && (
+        <span className="rounded bg-[var(--color-bg-elev-2)] px-1 py-px font-mono text-[10px] text-[var(--color-fg-muted)]">
+          {kind}
+        </span>
+      )}
     </span>
   );
 }
 
+/**
+ * Render a decision's extra fields as a single inline summary. For `failed`
+ * rows we promote `reason` first (the user-readable cause) and tuck `detail`
+ * after — keeps the table scannable without truncating the actionable bit.
+ */
 function decisionDetail(e: Record<string, unknown>): string {
-  const omit = new Set(["ts", "gen", "action", "by"]);
-  const parts: string[] = [];
+  const omit = new Set(["ts", "gen", "action", "by", "kind"]);
+  const priority = ["reason", "detail", "error", "errors", "ok", "attempt"];
+
+  const ordered: [string, unknown][] = [];
+  for (const k of priority) {
+    if (k in e && e[k] != null && e[k] !== "") ordered.push([k, e[k]]);
+  }
   for (const [k, v] of Object.entries(e)) {
-    if (omit.has(k)) continue;
+    if (omit.has(k) || priority.includes(k)) continue;
     if (v == null || v === "") continue;
+    ordered.push([k, v]);
+  }
+
+  const parts: string[] = [];
+  for (const [k, v] of ordered) {
+    const cap = k === "reason" || k === "detail" ? 90 : 40;
     if (typeof v === "object") {
-      parts.push(`${k}=${JSON.stringify(v).slice(0, 40)}`);
+      parts.push(`${k}=${JSON.stringify(v).slice(0, cap)}`);
     } else {
-      parts.push(`${k}=${String(v).slice(0, 40)}`);
+      parts.push(`${k}=${String(v).slice(0, cap)}`);
     }
   }
   return parts.join(" · ") || "—";

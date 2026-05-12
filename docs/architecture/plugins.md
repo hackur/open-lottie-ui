@@ -2,6 +2,8 @@
 
 The point of the plugin system: **adding a community CLI to the admin should be a manifest, not a code change.** Anyone with a tool that "takes a Lottie in, does something useful, returns Lottie or an asset out" can wire it in.
 
+> **As-shipped in M1:** the **manifest format below is real (ADR-007) but the loader is not yet built.** Per ADR-008, M1 hardcodes the plugin surfaces directly in API routes — see `apps/admin/app/api/library/[id]/{optimize,duplicate,export/video,glaxnimate}/route.ts` and the import routes for SVG/URL/video. The manifest files under `plugins/*/plugin.json` are stubs documenting intent. Real loader work lands in M2.
+
 ## Design constraints
 
 - **Local CLIs only.** No remote URLs, no `eval`, no plugin code shipped from the internet.
@@ -126,19 +128,20 @@ export async function runPlugin(pluginId: string, input: PluginInput, params: un
 
 ## First-party plugins shipped with the app
 
-All under `plugins/`:
+Manifest stubs live under `plugins/`. M1 implementations are hardcoded route handlers; the **Status** column tracks where each one is today.
 
-| id | Surfaces | Input | Output |
-|---|---|---|---|
-| `svg-import` | `library_action`, `import_drop` | `svg` | `lottie` |
-| `dotlottie-pack` | `library_item_action`, `library_multi_action` | `lottie[]` | `dotlottie` |
-| `lottie-validate` | `library_item_action`, `generation_action` | `lottie` | `report` |
-| `lottie-optimize` (M2) | `library_item_action` | `lottie` | `lottie` |
-| `gif-export` (M2, requires ffmpeg) | `library_item_action` | `lottie` | `gif` |
-| `mp4-export` (M2, requires ffmpeg) | `library_item_action` | `lottie` | `mp4` |
-| `glaxnimate-roundtrip` (M3, requires glaxnimate) | `library_item_action` | `lottie` | `lottie` |
-| `dotlottie-render` (M3, requires dotlottie-rs CLI) | `library_item_action`, `generation_action` | `lottie` | `png` |
-| `python-lottie-helpers` (M3, requires python+lottie pkg) | `library_item_action` | `lottie` | `lottie` |
+| id | Surfaces | Input | Output | Status (2026-05-11) |
+|---|---|---|---|---|
+| `svg-import` | `library_action`, `import_drop` | `svg` | `lottie` | Shipped via `/api/import/svg` (uses python-lottie; gated by `enable_python_lottie`). |
+| `dotlottie-pack` | `library_item_action`, `library_multi_action` | `lottie[]` | `dotlottie` | Shipped per-item via `/api/library/[id]/animation.lottie` (`@dotlottie/dotlottie-js`); multi-item batch is M2. |
+| `lottie-validate` | `library_item_action`, `generation_action` | `lottie` | `report` | Shipped inline (ajv + `lottie-spec`) on generate + import. No dedicated button yet. |
+| `lottie-optimize` | `library_item_action` | `lottie` | `lottie` | Shipped via `/api/library/[id]/optimize` (python-lottie; gated by `enable_python_lottie`). |
+| `gif-export` / `mp4-export` (ffmpeg) | `library_item_action` | `lottie` | `gif`/`mp4` | Shipped together as MOV/WebM/GIF export via `/api/library/[id]/export/video` (gated by `enable_ffmpeg`). |
+| `glaxnimate-roundtrip` | `library_item_action` | `lottie` | `lottie` | Shipped via `/api/library/[id]/glaxnimate` + `apps/admin/lib/glaxnimate.ts` save-back watcher (gated by `enable_glaxnimate`, on by default). |
+| `dotlottie-render` (dotlottie-rs CLI) | `library_item_action`, `generation_action` | `lottie` | `png` | Deferred — `dotlottie-rs` doesn't ship a CLI binary today (see `inventory/cli-tools.md`). |
+| `python-lottie-helpers` | `library_item_action` | `lottie` | `lottie` | Folded into `svg-import` + `lottie-optimize` above. |
+| `url-scrape-import` | `import_drop` | `url` | `lottie` | Shipped via `/api/import/url/*` (gated by `enable_url_scrape`, default OFF). |
+| `video-import` (ffmpeg) | `import_drop` | `video` | `lottie` | Shipped via `/api/import/video` (gated by `enable_ffmpeg`). |
 
 ## Surfaces (where buttons appear)
 

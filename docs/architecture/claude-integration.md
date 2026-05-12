@@ -4,65 +4,62 @@ This is the heart of the project. See `research/09-claude-cli.md` for CLI backgr
 
 ## Boundary
 
-Claude CLI is invoked **only** through `lib/claude/driver.ts`. Nothing else in the codebase shells out to `claude`. This makes it trivial to swap in the SDK or another model later.
+Claude CLI is invoked **only** through `packages/claude-driver/src/generate.ts`. Nothing else in the codebase shells out to `claude`. This makes it trivial to swap in the SDK or another model later. The admin wraps the driver in `apps/admin/lib/generation.ts`, which handles repair, transcript classification, and persistence.
 
 ## Public driver API
 
 ```ts
-// lib/claude/driver.ts
-export type GenerateOptions = {
-  prompt: string;                          // user-facing text
-  systemPrompt?: string;                   // override; defaults to prompts/system/default.md
-  model?: "claude-opus-4-7" | "claude-sonnet-4-6" | "claude-haiku-4-5-20251001";
-  tier?: 1 | 2 | 3;
-  templateId?: string;                     // when tier === 1
-  basis?: { id: string; lottieJson: unknown };  // remix mode
-  rejection?: { codes: string[]; note?: string }; // repair from a previous reject
-  maxRepairAttempts?: number;              // default 3
-  abortSignal?: AbortSignal;
-};
+// packages/claude-driver/src/generate.ts
+export function generate(opts: GenerateOptions): GenerateHandle;
 
-export type GenerateEvent =
-  | { type: "system"; sessionId: string }
-  | { type: "delta"; text: string }
-  | { type: "tool_use"; name: string; input: unknown }   // unused in v1 (tools disabled)
-  | { type: "version_attempt"; v: number; ok: boolean; errors?: string[] }
-  | { type: "result"; lottieJson: unknown; cost: number; durationMs: number };
+// GenerateOptions: { prompt, model?, systemPromptPath?, cwd?, signal?, silenceTimeoutMs? }
+// GenerateHandle: { events: AsyncIterable<DriverEvent>, kill(opts?), sessionId: Promise<string|null>, child: ChildProcess }
 
-export function generate(opts: GenerateOptions): {
-  id: string;
-  events: AsyncIterable<GenerateEvent>;
-  cancel(): void;
-};
+// DriverEvent kinds:
+//   init     — { kind: "init",    sessionId }
+//   text     — { kind: "text",    text }
+//   tool_use — { kind: "tool_use", tool }
+//   result   — { kind: "result",  text, costUsd, numTurns, durationMs, success }
+//   error    — { kind: "error",   message }
+//   raw      — { kind: "raw",     line }
 ```
 
-The `events` iterable is consumed by the Server Action which forwards to SSE.
+The repair loop, tier/template selection, and decisions/meta persistence live one layer up in `apps/admin/lib/generation.ts` (see `startTier3Generation`). That function:
+
+1. Calls `startRegistered(genId, { prompt, model })` so the driver child is tracked in the registry.
+2. Records every event to `generations/<id>/events.ndjson` for replay.
+3. On `result`, extracts the Lottie JSON, validates, optionally re-prompts, and updates `meta.json` + appends `decisions.jsonl`.
+4. On failure, calls `diagnoseTranscript()` and stores a `kind` of `rate_limited`, `tool_narration`, `empty`, or `no_tag`.
+
+The events iterable is also consumed by the SSE route at `/api/generate/[id]/stream`.
 
 ## CLI invocation
 
 ```ts
+// packages/claude-driver/src/generate.ts (excerpted)
 const args = [
-  "-p", userPrompt,
-  "--system-prompt", systemPrompt,
+  "--print",
   "--output-format", "stream-json",
   "--verbose",
-  "--model", model,
   "--permission-mode", "bypassPermissions",
-  "--disallowed-tools", "Bash,Edit,Write,WebFetch,WebSearch",
-  "--cwd", sandboxDir(id),
+  "--disallowed-tools", "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch,TodoWrite",
+  "--append-system-prompt", `@${systemPromptPath}`,
+  "--model", model,
 ];
 
 const child = spawn("claude", args, {
-  cwd: sandboxDir(id),
-  env: { ...process.env, NO_COLOR: "1" },
+  cwd: mkdtempSync(path.join(os.tmpdir(), "claude-lottie-")),
 });
+child.stdin.write(userPrompt);
+child.stdin.end();
 ```
 
 Notes:
 
-- `--disallowed-tools` is the safety net: the model can think but cannot touch our filesystem. **All "outputs" are extracted from the assistant's text.**
+- `--disallowed-tools` is the safety net. It includes the file-touching tools (`Read,Glob,Grep` as well as `Bash,Edit,Write`) plus `TodoWrite` (which the model would otherwise reach for and produce non-Lottie text). **All "outputs" are extracted from the assistant's text.**
+- The cwd is a fresh `mkdtemp` — the model never sees the project's `CLAUDE.md`, `docs/`, or `package.json`. This was load-bearing for keeping the model focused on emitting JSON instead of narrating template reads.
 - `bypassPermissions` is fine because we've already restricted tools.
-- `NO_COLOR=1` keeps the stream-json clean.
+- The driver runs a **60s silence watchdog** (default `silenceTimeoutMs`); if no event arrives it emits a synthetic `error` event and SIGKILLs the child.
 
 ## Output extraction
 

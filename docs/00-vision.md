@@ -1,5 +1,7 @@
 # Vision & problem statement
 
+> **Status (2026-05-11):** M0 docs locked; M1 admin (library / generate / review / approve / export / import / activity / settings / debug) is live locally. ~284 library entries in the dev tree. Tier-1 templates and Tier-3 Claude prompts both ship. See `architecture/roadmap.md` for what's next.
+
 ## The problem
 
 Lottie has won as the cross-platform vector-animation format. The official Lottie format is now stewarded by the **Lottie Animation Community (LAC)**, a Linux Foundation non-profit, with a real published spec at [`lottie.github.io/lottie-spec`](https://lottie.github.io/lottie-spec/). The runtime ecosystem is healthy:

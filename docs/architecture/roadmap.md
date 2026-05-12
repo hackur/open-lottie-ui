@@ -2,23 +2,20 @@
 
 Calendar-week granularity. Each milestone has a demo that proves it.
 
-## M0 — Research & planning (this week)
+## M0 — Research & planning ✅ done
 
-- All of `docs/` lands.
-- Brainstorm session with the user → MVP scope confirmed or adjusted.
-- ADRs locked.
+- All of `docs/` landed (19 research notes, 8 ADRs, architecture set).
+- ADRs locked. ADR-008 captures the M1 defaults committed without a live brainstorm.
 
 **Demo:** doc walk-through. Decisions are explicit and traceable.
 
-## M1 — MVP (week 1 of build)
+## M1 — MVP ✅ shipped (2026-05)
 
-Per `architecture/mvp.md`. End-to-end: library → generate → review → approve → export.
+Per `architecture/mvp.md`. End-to-end: library → generate → review → approve → export. Plus a number of M3 items pulled forward behind feature flags: Glaxnimate roundtrip, python-lottie optimize, ffmpeg video export, video import, URL-paste import.
+
+**Status:** library at ~284 entries; Tier-1 and Tier-3 generation both live; activity log + debug surface shipped; feature flags wired through `/settings`.
 
 **Demo:** the script in `mvp.md` §"Demo script."
-
-**Stretch (if time permits in week 1):**
-- Tier 1 templates with 3 templates (`color-pulse`, `fade-in`, `scale-bounce`).
-- Library tag filter.
 
 ## M2 — Plugins, diff, remix (weeks 2–4)
 
@@ -68,22 +65,21 @@ Per `features.md` §Later:
 ## Calendar overview
 
 ```
-Apr 27 (today) ───── M0  research & planning
-May 4         ───── M1  MVP starts
-May 11        ───── M1  done (target)
-May 18 ── Jun 1     M2  plugins + diff + remix + variants
-Jun 8 ── Jun 22     M3  power plugins + theming
-Jun 29 ── Jul 6     M4  polish + 0.1 release
-Jul+                M5  beyond
+Apr 27 ───── M0  research & planning      [done]
+Apr 28 – May 11 M1  MVP                   [done — shipped on schedule]
+May 12+        M2  plugin loader + diff + remix + variants  [next]
+later          M3  power plugins + theming + external sources
+later          M4  polish + 0.1 release
+later          M5  beyond
 ```
 
-These are *targets*, not commitments. The two milestones with the highest schedule risk are **M1 (proves the LLM angle works)** and **M3 (depends on community CLIs being usable from Node)**.
+These are *targets*, not commitments. M1 shipped on schedule (the LLM angle works: Tier-3 with a 60s silence watchdog + transcript diagnosis is reliable enough to ship). Highest remaining schedule risk is **M3** (community CLIs being usable from Node; `dotlottie-rs` does not ship a CLI today, so that plugin is blocked upstream).
 
 ## What slipping looks like
 
-- **M1 slips a week** if Claude's Lottie reliability is below 50 % even with templates → we cut Tier 3 and ship Tier 1 + Tier 2 only.
-- **M2 slips two weeks** if the plugin manifest needs a v2 mid-build → we ship hardcoded plugins for M2 and revisit manifests in M3.
-- **M3 slips arbitrarily** if `python-lottie` or `glaxnimate` integrations have install pain we can't smooth over → we punt those plugins to "community-contributed" and ship the Node-only plugins for M3.
+- ~~**M1 slips a week** if Claude's Lottie reliability is below 50% even with templates → we cut Tier 3 and ship Tier 1 + Tier 2 only.~~ Did not slip; Tier 3 ships, Tier 2 (Python script) was deferred to M2.
+- **M2 slips two weeks** if the plugin manifest needs a v2 mid-build → we ship hardcoded plugins for M2 and revisit manifests in M3. (Note: M1 already hardcodes the actions per ADR-008, so M2's task is purely "extract to loader".)
+- **M3 slips arbitrarily** if `python-lottie` or `glaxnimate` integrations have install pain we can't smooth over. Mitigated: both shipped in M1 behind feature flags, and Glaxnimate auto-detects `/Applications/glaxnimate.app/...`.
 
 ## Decision points
 

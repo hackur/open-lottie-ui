@@ -2,7 +2,7 @@
 
 A local-first Next.js admin for browsing, generating, remixing, and exporting Lottie animations — orchestrated by the Claude CLI with a human in the loop on every change.
 
-> **Status: M1 — admin runs locally.** All M0 docs are still authoritative; see `docs/` for design, `docs/decisions/ADR-008-m1-defaults.md` for the defaults committed without the user brainstorm.
+> **Status: M1 — admin runs locally.** End-to-end loop (browse → generate → review → approve → export) is shipping; library/generate/review/activity/settings/import/debug routes are live. See `docs/` for design and `docs/decisions/ADR-008-m1-defaults.md` for the defaults committed without the user brainstorm.
 
 ## Why
 
@@ -35,7 +35,7 @@ open-lottie-ui/
 │   ├── inventory/                     # npm packages, CLI tools, asset sources
 │   ├── architecture/                  # personas, system, data model, MVP, roadmap
 │   ├── workflows/                     # generate-approve, remix, import
-│   ├── decisions/                     # 7 ADRs
+│   ├── decisions/                     # 8 ADRs
 │   ├── wireframes.md                  # ASCII screen sketches
 │   ├── glossary.md                    # term definitions
 │   ├── faq.md
@@ -54,10 +54,11 @@ open-lottie-ui/
 │   ├── glaxnimate-roundtrip/          # MIT plugin → GPL-3.0 tool
 │   ├── dotlottie-render/              # MIT (uses dotlottie-rs)
 │   └── python-lottie-helpers/         # MIT plugin → AGPL-3.0 tool
-├── packages/                          # reusable libraries (built in M1+)
-│   └── lottie-tools/
-│       ├── licenses.json              # license registry
-│       └── schema/                    # vendored JSON Schemas
+├── packages/                          # reusable libraries
+│   ├── lottie-tools/                  # data layer, validator, templates, plugins, pack, diff, hash
+│   │   ├── licenses.json              # license registry
+│   │   └── schema/                    # vendored JSON Schemas
+│   └── claude-driver/                 # spawns `claude --print --output-format stream-json`
 ├── seed-library/                      # CC0/MIT starter animations shipped with the repo
 │   └── loader-pulse/
 ├── scripts/
@@ -81,16 +82,19 @@ open-lottie-ui/
 
 ## Run it locally
 
-Requires Node ≥ 20 and `pnpm` (auto-activated via corepack on Node 22+).
-Optional plugin tools (each one degrades gracefully if missing):
+Requires **Node 25** (current LTS supported by Next.js 15) and **pnpm 9.15** (auto-activated via corepack). `engines.node` in `package.json` allows ≥ 20, but the dev team runs on Node 25; older majors are best-effort.
 
-- `claude` CLI — Tier-3 prompted generation
-- `ffmpeg` — gif/mp4 export
-- `inlottie` (`cargo install inlottie`) — Rust Lottie renderer for headless thumbnails / diffing
-- `python3` + `pip3 install --user --break-system-packages lottie` — python-lottie (AGPL-3.0) for SVG↔Lottie + optimization
-- `glaxnimate` — vector animation editor; no homebrew cask, install the DMG from <https://glaxnimate.org/>
+> **Heads-up:** this is a pnpm workspace. Running `npm install` will *not* hydrate the workspace packages (`@open-lottie/claude-driver`, `@open-lottie/lottie-tools`) — use `pnpm install`.
 
-Run `pnpm detect-tools` to see what's installed.
+Optional plugin tools (each one degrades gracefully if missing, and most are gated behind feature flags in `/settings` — see `apps/admin/lib/feature-flags.ts`):
+
+- `claude` CLI — Tier-3 prompted generation (required for `/generate`)
+- `ffmpeg` — Lottie → MOV/WebM/GIF export + video → Lottie import (flag: `enable_ffmpeg`)
+- `inlottie` (`cargo install inlottie`) — Rust Lottie renderer; v0.1.9 is GUI-only on macOS, leave off unless you have a headless build (flag: `enable_inlottie`)
+- `python3` + `pip3 install --user --break-system-packages lottie` — python-lottie (AGPL-3.0) for SVG↔Lottie + optimization (flag: `enable_python_lottie`)
+- `glaxnimate` — vector animation editor; no homebrew cask, install the DMG from <https://glaxnimate.org/>. Detector resolves `/Applications/glaxnimate.app/Contents/MacOS/glaxnimate` automatically (flag: `enable_glaxnimate`, on by default)
+
+Run `pnpm detect-tools` to see what's installed (also surfaced on `/settings`; results are cached for 60s in-process to avoid Dock-icon thrash on macOS).
 
 ```
 $ corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -99,10 +103,13 @@ $ pnpm dev
    open-lottie-ui  •  http://127.0.0.1:3000
 
 # In the browser:
-#  /library  → 3 seed animations (loader-pulse, checkmark-success, spinner-arc)
+#  /library  → paginated grid with filter+sort+source; ~284 entries in the dev tree today
 #  /generate → Tier 1 (template + params, deterministic) or Tier 3 (Claude prompt)
 #  /review/:id → side-by-side base/generation, validation panel, press 'a' to approve / 'r' to reject
-#  /library  → new animation appears; export as .lottie or .json
+#  /library/[id] → preview, tag/license editor, optimize, duplicate, export, open-in-Glaxnimate
+#  /activity → recent decisions tail
+#  /settings → feature flags, default model/tier/renderer, tool detection
+#  /debug    → server snapshot + error log (see /api/debug)
 ```
 
 Probe host capabilities anytime: `pnpm detect-tools`.

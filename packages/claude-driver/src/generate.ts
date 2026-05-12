@@ -179,6 +179,13 @@ export function generate(opts: GenerateOptions): GenerateHandle {
     // time we get a chance.
     const parseIter = parseStream(stdout)[Symbol.asyncIterator]();
     let parseDone = false;
+    // The parser is a stateful async iterator — calling .next() twice
+    // concurrently queues the second call. We must reuse a single pending
+    // .next() across loop iterations whenever the race was won by silence
+    // instead of by parse, so the parser doesn't accumulate ignored work.
+    let pendingParse:
+      | Promise<{ kind: "parse"; result: IteratorResult<DriverEvent> }>
+      | null = null;
     while (true) {
       // Drain any queued silence-events first so they reach the consumer
       // even if the parser is mid-await.
@@ -188,25 +195,50 @@ export function generate(opts: GenerateOptions): GenerateHandle {
       }
       if (parseDone) break;
 
-      const nextParse = parseIter.next().then(
-        (r) => ({ kind: "parse" as const, result: r }),
-      );
-      const nextSilence = silenceTripped
-        ? Promise.resolve({ kind: "silence" as const })
-        : new Promise<{ kind: "silence" }>((resolve) => {
-            silenceWaker = () => resolve({ kind: "silence" });
-          });
-
-      const winner = await Promise.race([nextParse, nextSilence]);
-      if (winner.kind === "silence") {
-        // Loop back and drain silenceQueue.
+      // Once the watchdog has tripped, stop racing — the child is being
+      // killed and we just want to drain whatever the parser still emits
+      // (typically nothing) and then exit cleanly. Continuing to race
+      // against a synchronously-resolved silence promise would spin in a
+      // tight loop forever because `silenceTripped` is never reset.
+      if (silenceTripped) {
+        if (!pendingParse) {
+          pendingParse = parseIter.next().then(
+            (r) => ({ kind: "parse" as const, result: r }),
+          );
+        }
+        const { result } = await pendingParse;
+        pendingParse = null;
+        const { value, done } = result;
+        if (done) {
+          parseDone = true;
+          continue;
+        }
+        // Silently absorb late events after the watchdog tripped — the
+        // consumer already saw the silence error; piping more (likely
+        // partial / inconsistent) events would just confuse them.
+        void value;
         continue;
       }
-      // The parse promise we created is now consumed; we must observe its
-      // result here (otherwise we'd resolve the same iterator twice next
-      // round). Note we deliberately cancelled the silence waker by yielding
-      // — set it back to null so it won't fire stale.
+
+      if (!pendingParse) {
+        pendingParse = parseIter.next().then(
+          (r) => ({ kind: "parse" as const, result: r }),
+        );
+      }
+      const nextSilence = new Promise<{ kind: "silence" }>((resolve) => {
+        silenceWaker = () => resolve({ kind: "silence" });
+      });
+
+      const winner = await Promise.race([pendingParse, nextSilence]);
+      if (winner.kind === "silence") {
+        // Leave pendingParse intact — we'll await it on a future iteration
+        // (or drop it once silenceTripped causes us to drain).
+        continue;
+      }
+      // Parse won the race; clear the waker so a late watchdog firing
+      // doesn't resolve a stale promise we no longer own.
       silenceWaker = null;
+      pendingParse = null;
 
       const { value, done } = winner.result;
       if (done) {

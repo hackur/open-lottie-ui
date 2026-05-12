@@ -55,7 +55,7 @@ Index for `docs/`. Read top to bottom for the full story; jump in via the "If yo
 
 ## Decisions (ADRs)
 
-- [`decisions/`](decisions/README.md) — 7 ADRs (Next.js, FS-as-DB, Claude CLI, lottie-web preview, .lottie export, no auth, manifest plugins).
+- [`decisions/`](decisions/README.md) — 8 ADRs (Next.js, FS-as-DB, Claude CLI, lottie-web preview, .lottie export, no auth, manifest plugins, M1 defaults).
 
 ## Reference
 
@@ -63,6 +63,7 @@ Index for `docs/`. Read top to bottom for the full story; jump in via the "If yo
 - [`glossary.md`](glossary.md) — term definitions.
 - [`faq.md`](faq.md) — quick answers.
 - [`brainstorm.md`](brainstorm.md) — questions to bring to the next user session.
+- [`SAMPLES.md`](SAMPLES.md) — what `scripts/seed-samples.py` populates and how to re-run cleanly.
 
 ## Outside `docs/` — concrete artifacts the docs reference
 
@@ -86,14 +87,8 @@ Index for `docs/`. Read top to bottom for the full story; jump in via the "If yo
 
 ## Top open questions
 
-See [`brainstorm.md`](brainstorm.md). The five must-answers for kicking off M1:
-
-1. Tier strategy — templates first, raw JSON first, or both?
-2. Bundled seed library — in-repo or separate?
-3. `.lottie` vs `.json` default export.
-4. Variant generation in MVP or M2?
-5. Plugin system in M1 (real loader) or M2 (hardcoded for M1)?
+The five M1 kick-off questions are now answered in [`decisions/ADR-008-m1-defaults.md`](decisions/ADR-008-m1-defaults.md). Live open questions live in [`brainstorm.md`](brainstorm.md).
 
 ---
 
-*Last updated: 2026-04-27. Each entry above corresponds to a file under `docs/` (or, for "concrete artifacts", to a sibling directory).*
+*Last updated: 2026-05-11. Each entry above corresponds to a file under `docs/` (or, for "concrete artifacts", to a sibling directory).*

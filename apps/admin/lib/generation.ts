@@ -3,6 +3,7 @@ import path from "node:path";
 import fs from "node:fs/promises";
 import { data, validator } from "@open-lottie/lottie-tools";
 import { processRegistry, startRegistered } from "@open-lottie/claude-driver";
+import { diagnoseTranscript } from "./diagnose-transcript.ts";
 
 /**
  * Spawns the Claude CLI driver for a Tier-3 generation, streams events,
@@ -93,14 +94,26 @@ export async function startTier3Generation(
   await fs.writeFile(path.join(dir, "transcript.md"), fullText, "utf8");
   const json = extractLottieJson(fullText);
   if (!json) {
-    log("no-lottie-tag", { transcriptLength: fullText.length, sampleStart: fullText.slice(0, 200), sampleEnd: fullText.slice(-200) });
+    const diag = diagnoseTranscript(fullText);
+    log("no-lottie-tag", {
+      kind: diag.kind,
+      transcriptLength: fullText.length,
+      sampleStart: fullText.slice(0, 200),
+      sampleEnd: fullText.slice(-200),
+    });
     await data.updateGenerationMeta(genId, {
       cost_usd: costUsd,
       num_turns: numTurns,
       duration_ms: durationMs,
     });
     await data.setGenerationStatus(genId, "failed-validation");
-    await data.appendDecision({ gen: genId, action: "failed", reason: "No <lottie-json> tag found" });
+    await data.appendDecision({
+      gen: genId,
+      action: "failed",
+      kind: diag.kind,
+      reason: diag.reason,
+      ...(diag.detail ? { detail: diag.detail } : {}),
+    });
     return;
   }
 
@@ -253,3 +266,4 @@ function findJsonBlock(text: string): string | null {
 }
 
 export { processRegistry };
+export { diagnoseTranscript };

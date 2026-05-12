@@ -7,7 +7,7 @@
   "concurrent_generations": 5,
   "theme": "dark",
   "enable_inlottie": false,
-  "enable_glaxnimate": false,
+  "enable_glaxnimate": true,
   "enable_python_lottie": false,
   "enable_ffmpeg": false,
   "enable_url_scrape": false

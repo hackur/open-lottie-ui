@@ -115,3 +115,7 @@
 {"ts":"2026-04-30T06:27:10.874Z","gen":"2026-04-30_0cd671","action":"approve","by":"local-user"}
 {"ts":"2026-04-30T06:27:10.882Z","gen":"2026-04-30_0cd671","action":"committed","library_id":"2026-04-30_rotate-spin-render_0cd671"}
 {"ts":"2026-04-30T06:28:21.056Z","gen":"2026-04-30_8632ae","action":"failed","reason":"No <lottie-json> tag found"}
+{"ts":"2026-05-12T05:54:52.219Z","gen":"2026-04-30_heartbeat-render_61d2d0","action":"opened_in_glaxnimate","library_id":"2026-04-30_heartbeat-render_61d2d0","binary":"/Applications/glaxnimate.app/Contents/MacOS/glaxnimate","pid":5380}
+{"ts":"2026-05-12T05:58:17.153Z","gen":"2026-05-12_warmup_4b75db","action":"opened_in_glaxnimate","library_id":"2026-05-12_warmup_4b75db","binary":"/Applications/glaxnimate.app/Contents/MacOS/glaxnimate","pid":30783}
+{"ts":"2026-05-12T06:00:11.279Z","gen":"2026-05-12_75163e","action":"created","tier":1,"via":"glaxnimate","base_id":"2026-05-12_warmup_4b75db"}
+{"ts":"2026-05-12T06:00:11.284Z","gen":"2026-05-12_75163e","action":"validated","ok":true,"errors":0}

@@ -8,6 +8,21 @@ Project memory for Claude Code sessions. Read this first.
 
 Currently in **M1 (admin runs locally)**. The Next.js app is in `apps/admin`, packages live under `packages/{lottie-tools,claude-driver}`. Run with `pnpm dev` → http://127.0.0.1:3000. M0 docs under `docs/` are still authoritative for design.
 
+## What's been built so far
+
+Working surfaces in `apps/admin/app/`:
+
+- `/library` — paginated grid (filter + sort + source), with `/library/[id]` detail offering preview, tag/license editor, duplicate, optimize, export to `.lottie`/`.json`/video, and Glaxnimate edit-in-place.
+- `/generate` — Tier-1 (template + params, deterministic) and Tier-3 (Claude prompt) generation; results land in `/review/[id]` with side-by-side base/generation and approve/reject.
+- `/review` — pending-review queue.
+- `/import` — SVG, URL paste, URL scan, video import (feature-flagged).
+- `/activity` — recent decisions tail.
+- `/settings` — feature flags + default model/tier/renderer + tool detection.
+- `/debug` — server snapshot panel and error log.
+- `/healthz`, `/welcome` — boot diagnostics + first-run ack.
+
+Library is at ~284 entries today. Claude driver lives in `packages/claude-driver/src/generate.ts` (spawns `claude --print --output-format stream-json --verbose --permission-mode bypassPermissions --disallowed-tools Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch,TodoWrite` in a tmp cwd; 60s silence watchdog). `apps/admin/lib/generation.ts` wraps the driver and diagnoses transcript failures (`rate_limited` / `tool_narration` / `empty` / `no_tag`) which the decisions log records as the `kind` field on `failed` rows. Tool detection has a 60s in-memory cache to avoid Qt Dock thrash on macOS.
+
 ## Where to look
 
 - **Read first:** `README.md` (Run it locally), `docs/00-vision.md`, `docs/SUMMARY.md`.
@@ -15,7 +30,8 @@ Currently in **M1 (admin runs locally)**. The Next.js app is in `apps/admin`, pa
 - **MVP plan:** `docs/architecture/mvp.md`.
 - **Decisions made:** `docs/decisions/` (8 ADRs; ADR-008 covers the M1 defaults committed without the brainstorm).
 - **Risks:** `docs/research/17-risks.md`.
-- **App entry points:** `apps/admin/app/{library,generate,review,settings}/`. API routes under `apps/admin/app/api/`. Server-only data layer at `packages/lottie-tools/src/data/`. Claude driver at `packages/claude-driver/src/`.
+- **App entry points:** `apps/admin/app/{library,generate,review,activity,import,settings,debug,healthz,welcome}/`. API routes under `apps/admin/app/api/`. Server-only data layer at `packages/lottie-tools/src/data/`. Claude driver at `packages/claude-driver/src/`.
+- **Server-side libs:** `apps/admin/lib/` (`detect-tools.ts` with 60s cache, `feature-flags.ts` with 5 flags, `glaxnimate.ts` save-back watcher, `generation.ts` with `diagnoseTranscript`, `settings.ts`, `thumbnail.ts`, `video-import.ts`, `video-export.ts`, `python-lottie.ts`, `url-scrape.ts`, `asset-scraper.ts`, `error-log.ts`, `first-run.ts`, `route-handler.ts`).
 
 ## Conventions in this repo
 
@@ -45,11 +61,13 @@ Currently in **M1 (admin runs locally)**. The Next.js app is in `apps/admin`, pa
 
 Don't edit the existing ADR. Create a new ADR that supersedes it; mark the old one **Superseded by ADR-NNN** in its Status section.
 
-## Tools the project assumes (when implementation lands)
+## Tools the project assumes
 
-Required for v1: Node ≥ 20, pnpm, the Claude CLI.
-Recommended: ffmpeg, Headless Chrome (auto via puppeteer).
-Optional plugins: dotlottie-rs CLI, glaxnimate, python (with bodymovin / lottie packages).
+Required for v1: Node 25 (≥ 20 will run; team runs on 25), pnpm 9.15 (via corepack), the Claude CLI.
+Recommended: ffmpeg.
+Optional plugins (all behind feature flags in `/settings`, default OFF except `enable_glaxnimate`): glaxnimate, python-lottie, inlottie (GUI-only on macOS), URL-scrape import.
+
+`npm install` will NOT hydrate workspace deps — always use `pnpm install`.
 
 See `docs/inventory/cli-tools.md` for installation hints.
 
